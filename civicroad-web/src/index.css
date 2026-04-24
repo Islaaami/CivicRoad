@@ -1,0 +1,51 @@
+:root {
+  color-scheme: light;
+  --color-ink: #1e293b;
+  --color-muted: #5b6478;
+  --color-accent: #c96a23;
+  --color-accent-dark: #8b4719;
+  --color-line: rgba(30, 41, 59, 0.12);
+  --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.1), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.12), transparent 30%),
+    linear-gradient(180deg, #f7f3ea 0%, #eef2f5 100%);
+  color: var(--color-ink);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+#root {
+  min-height: 100vh;
+}
