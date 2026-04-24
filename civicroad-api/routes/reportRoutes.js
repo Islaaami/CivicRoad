@@ -1,0 +1,21 @@
+const express = require("express");
+const upload = require("../middleware/upload");
+const {
+  getReports,
+  getReport,
+  createReport,
+  updateReport,
+  updateReportStatus,
+  deleteReport,
+} = require("../controllers/reportController");
+
+const router = express.Router();
+
+router.get("/", getReports);
+router.get("/:id", getReport);
+router.post("/", upload.single("image"), createReport);
+router.patch("/:id", updateReport);
+router.patch("/:id/status", updateReportStatus);
+router.delete("/:id", deleteReport);
+
+module.exports = router;
