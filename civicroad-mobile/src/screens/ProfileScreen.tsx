@@ -2,20 +2,29 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { useIsFocused } from "@react-navigation/native";
+import { CompositeScreenProps, useIsFocused } from "@react-navigation/native";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
-import apiClient from "../api/client";
+import apiClient, { getAssetUrl } from "../api/client";
 import Badge from "../components/Badge";
 import Button from "../components/Button";
-import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
+import { AppStackParamList } from "../navigation/AppNavigator";
+import { AppTabParamList } from "../navigation/MainTabNavigator";
 import { Report, User } from "../utils/types";
 import { colors, shadows } from "../utils/theme";
+
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, "Profile">,
+  NativeStackScreenProps<AppStackParamList>
+>;
 
 function getInitials(user: User | null) {
   if (!user) {
@@ -29,20 +38,13 @@ function getInitials(user: User | null) {
   return `${first}${last}`.trim().toUpperCase() || fallback.toUpperCase();
 }
 
-function ProfileScreen() {
-  const { user, updateUser, logout } = useAuth();
+function ProfileScreen({ navigation }: Props) {
+  const { user, refreshUser, logout } = useAuth();
   const isFocused = useIsFocused();
 
   const [profileUser, setProfileUser] = useState<User | null>(user);
   const [reports, setReports] = useState<Report[]>([]);
-  const [formValues, setFormValues] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    bio: "",
-  });
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const currentUserId = user?.id;
@@ -57,8 +59,8 @@ function ProfileScreen() {
       try {
         setLoading(true);
 
-        const [refreshedUserResponse, reportsResponse] = await Promise.all([
-          apiClient.get<User>(`/users/${currentUserId}`),
+        const [refreshedUser, reportsResponse] = await Promise.all([
+          refreshUser(currentUserId),
           apiClient.get<Report[]>("/reports"),
         ]);
 
@@ -66,19 +68,10 @@ function ProfileScreen() {
           return;
         }
 
-        const refreshedUser = refreshedUserResponse.data;
-        const ownReports = reportsResponse.data.filter(
-          (report) => report.citizen_id === currentUserId
-        );
+        const ownReports = reportsResponse.data.filter((report) => report.citizen_id === currentUserId);
 
         setProfileUser(refreshedUser);
         setReports(ownReports);
-        setFormValues({
-          first_name: refreshedUser.first_name || "",
-          last_name: refreshedUser.last_name || "",
-          email: refreshedUser.email || "",
-          bio: refreshedUser.bio || "",
-        });
       } catch (error: any) {
         if (active) {
           Alert.alert(
@@ -98,7 +91,7 @@ function ProfileScreen() {
     return () => {
       active = false;
     };
-  }, [isFocused, user?.id]);
+  }, [isFocused, refreshUser, user?.id]);
 
   const totalReports = reports.length;
   const resolvedReports = reports.filter((report) => report.status === "resolved").length;
@@ -137,39 +130,22 @@ function ProfileScreen() {
     [resolvedReports, totalReports]
   );
 
-  async function handleSaveProfile() {
-    if (!user?.id) {
-      return;
-    }
-
-    if (!formValues.first_name.trim() || !formValues.last_name.trim() || !formValues.email.trim()) {
-      Alert.alert("Missing details", "First name, last name, and email are required.");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const updatedUser = await updateUser({
-        first_name: formValues.first_name.trim(),
-        last_name: formValues.last_name.trim(),
-        email: formValues.email.trim(),
-        bio: formValues.bio.trim(),
-      });
-
-      setProfileUser(updatedUser);
-      Alert.alert("Profile updated", "Your profile details have been saved.");
-    } catch (error: any) {
-      Alert.alert(
-        "Unable to save profile",
-        error.response?.data?.message || error.message || "Please try again."
-      );
-    } finally {
-      setSaving(false);
-    }
+  function handleLogoutPress() {
+    Alert.alert("Logout", "Are you sure you want to end your current session?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: logout,
+      },
+    ]);
   }
 
   const displayedUser = profileUser || user;
+  const profileImageUrl = getAssetUrl(displayedUser?.profile_image_url);
 
   if (!displayedUser || loading) {
     return (
@@ -185,7 +161,11 @@ function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.heroCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{getInitials(displayedUser)}</Text>
+            {profileImageUrl ? (
+              <Image source={{ uri: profileImageUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{getInitials(displayedUser)}</Text>
+            )}
           </View>
           <View style={styles.heroCopy}>
             <Text style={styles.heroTitle}>
@@ -193,7 +173,8 @@ function ProfileScreen() {
             </Text>
             <Text style={styles.heroEmail}>{displayedUser.email}</Text>
             <Text style={styles.heroBio}>
-              {formValues.bio?.trim() || "Add a short bio to personalize your CivicRoad profile."}
+              {displayedUser.bio?.trim() ||
+                "Add a short bio to personalize your CivicRoad profile."}
             </Text>
           </View>
         </View>
@@ -228,45 +209,9 @@ function ProfileScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Edit profile</Text>
-          <Input
-            label="First name"
-            onChangeText={(value) =>
-              setFormValues((currentValues) => ({ ...currentValues, first_name: value }))
-            }
-            value={formValues.first_name}
-          />
-          <Input
-            label="Last name"
-            onChangeText={(value) =>
-              setFormValues((currentValues) => ({ ...currentValues, last_name: value }))
-            }
-            value={formValues.last_name}
-          />
-          <Input
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            label="Email"
-            onChangeText={(value) =>
-              setFormValues((currentValues) => ({ ...currentValues, email: value }))
-            }
-            value={formValues.email}
-          />
-          <Input
-            label="Bio"
-            multiline
-            onChangeText={(value) =>
-              setFormValues((currentValues) => ({ ...currentValues, bio: value }))
-            }
-            placeholder="Tell your city something about you."
-            value={formValues.bio}
-          />
-          <Button loading={saving} onPress={handleSaveProfile} title="Save Profile" />
-        </View>
+        <Button onPress={() => navigation.navigate("EditProfile")} title="Edit Profile" />
 
-        <Button onPress={logout} title="Log Out" variant="secondary" />
+        <Button onPress={handleLogoutPress} title="Logout" variant="secondary" />
       </ScrollView>
     </SafeAreaView>
   );
@@ -307,9 +252,14 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#f5e8da",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
   avatarText: {
     color: colors.primaryDark,
@@ -373,6 +323,30 @@ const styles = StyleSheet.create({
   },
   badgeList: {
     gap: 12,
+  },
+  detailList: {
+    gap: 14,
+  },
+  detailItem: {
+    gap: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: "#fffaf3",
+    padding: 14,
+  },
+  detailLabel: {
+    color: colors.textMuted,
+    fontSize: 13,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  detailValue: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "700",
   },
 });
 

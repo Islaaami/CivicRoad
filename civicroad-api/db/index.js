@@ -2,11 +2,36 @@ const fs = require("fs");
 const path = require("path");
 const sqlite3 = require("sqlite3");
 const { open } = require("sqlite");
+const { determineMunicipalityFromCoordinates } = require("../utils/municipality");
 
 const dataDirectory = path.join(__dirname, "..", "data");
 const databasePath = path.join(dataDirectory, "civicroad.sqlite");
 
 let db;
+
+const MUNICIPALITY_ADMINS = [
+  {
+    email: "admin.agadir@civicroad.ma",
+    password: "admin123",
+    first_name: "Agadir",
+    last_name: "Admin",
+    municipality: "Agadir",
+  },
+  {
+    email: "admin.inezgane@civicroad.ma",
+    password: "admin123",
+    first_name: "Inezgane",
+    last_name: "Admin",
+    municipality: "Inezgane",
+  },
+  {
+    email: "admin.ait-melloul@civicroad.ma",
+    password: "admin123",
+    first_name: "Ait Melloul",
+    last_name: "Admin",
+    municipality: "Ait Melloul",
+  },
+];
 
 async function ensureColumnExists(tableName, columnName, columnDefinition) {
   const columns = await db.all(`PRAGMA table_info(${tableName})`);
@@ -41,43 +66,58 @@ async function seedCategories() {
   }
 }
 
-async function ensureAdminUser() {
-  const adminEmail = "admin@example.com";
-  const existingAdmin = await db.get(
-    "SELECT id FROM users WHERE email = ?",
-    [adminEmail]
-  );
+async function ensureAdminUsers() {
+  await db.run("DELETE FROM users WHERE email = ?", ["admin@example.com"]);
 
-  if (existingAdmin) {
-    return;
+  for (const adminUser of MUNICIPALITY_ADMINS) {
+    await db.run(
+      `
+        INSERT INTO users (
+          email,
+          password,
+          role,
+          first_name,
+          last_name,
+          bio,
+          municipality
+        )
+        VALUES (?, ?, 'admin', ?, ?, '', ?)
+        ON CONFLICT(email) DO UPDATE SET
+          password = excluded.password,
+          role = excluded.role,
+          first_name = excluded.first_name,
+          last_name = excluded.last_name,
+          bio = excluded.bio,
+          municipality = excluded.municipality
+      `,
+      [
+        adminUser.email,
+        adminUser.password,
+        adminUser.first_name,
+        adminUser.last_name,
+        adminUser.municipality,
+      ]
+    );
   }
-
-  await db.run(
-    `
-      INSERT INTO users (
-        email,
-        password,
-        role,
-        first_name,
-        last_name,
-        bio
-      )
-      VALUES (?, ?, ?, ?, ?, ?)
-    `,
-    ["admin@example.com", "admin123", "admin", "Admin", "User", ""]
-  );
 }
 
 async function seedDemoReports() {
-  const existingReports = await db.get("SELECT COUNT(*) AS count FROM reports");
+  await db.run(
+    `
+      INSERT INTO users (email, password, role, first_name, last_name, bio)
+      VALUES (?, ?, 'citizen', ?, ?, '')
+      ON CONFLICT(email) DO UPDATE SET
+        password = excluded.password,
+        role = excluded.role,
+        first_name = excluded.first_name,
+        last_name = excluded.last_name
+    `,
+    ["citizen.demo@civicroad.local", "demo123", "Demo", "Citizen"]
+  );
 
-  if (existingReports.count > 0) {
-    return;
-  }
-
-  const demoCitizen = await db.run(
-    "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
-    ["citizen.demo@civicroad.local", "demo123", "citizen"]
+  const demoCitizen = await db.get(
+    "SELECT id FROM users WHERE email = ?",
+    ["citizen.demo@civicroad.local"]
   );
 
   const demoReports = [
@@ -111,12 +151,44 @@ async function seedDemoReports() {
       status: "resolved",
       createdAt: "datetime('now', '-2 days')",
     },
+    {
+      categoryName: "Obstruction",
+      title: "Blocked sidewalk near Inezgane transport hub",
+      description:
+        "Temporary barriers are forcing pedestrians into traffic around the main station area.",
+      latitude: 30.35535,
+      longitude: -9.53639,
+      status: "pending",
+      createdAt: "datetime('now', '-10 hours')",
+    },
+    {
+      categoryName: "Water Leak",
+      title: "Water leak spreading beside Ait Melloul market",
+      description:
+        "Water has been pooling across the edge of the road and making the area slippery.",
+      latitude: 30.34164,
+      longitude: -9.50356,
+      status: "pending",
+      createdAt: "datetime('now', '-14 hours')",
+    },
   ];
 
   for (const report of demoReports) {
+    const existingReport = await db.get("SELECT id FROM reports WHERE title = ?", [
+      report.title,
+    ]);
+
+    if (existingReport) {
+      continue;
+    }
+
     const category = await db.get("SELECT id FROM categories WHERE name = ?", [
       report.categoryName,
     ]);
+    const municipality = determineMunicipalityFromCoordinates(
+      report.latitude,
+      report.longitude
+    );
 
     await db.run(
       `
@@ -127,21 +199,45 @@ async function seedDemoReports() {
           description,
           latitude,
           longitude,
+          municipality,
           status,
           created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ${report.createdAt})
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${report.createdAt})
       `,
       [
-        demoCitizen.lastID,
+        demoCitizen.id,
         category.id,
         report.title,
         report.description,
         report.latitude,
         report.longitude,
+        municipality,
         report.status,
       ]
     );
+  }
+}
+
+async function backfillReportMunicipalities() {
+  const reports = await db.all(
+    `
+      SELECT id, latitude, longitude
+      FROM reports
+      WHERE municipality IS NULL OR TRIM(municipality) = ''
+    `
+  );
+
+  for (const report of reports) {
+    const municipality = determineMunicipalityFromCoordinates(
+      Number(report.latitude),
+      Number(report.longitude)
+    );
+
+    await db.run("UPDATE reports SET municipality = ? WHERE id = ?", [
+      municipality,
+      report.id,
+    ]);
   }
 }
 
@@ -160,7 +256,8 @@ async function initDb() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'staff'
+      role TEXT NOT NULL DEFAULT 'staff',
+      municipality TEXT
     );
 
     CREATE TABLE IF NOT EXISTS categories (
@@ -176,6 +273,7 @@ async function initDb() {
       description TEXT NOT NULL,
       latitude REAL NOT NULL,
       longitude REAL NOT NULL,
+      municipality TEXT,
       status TEXT NOT NULL DEFAULT 'pending'
         CHECK (status IN ('pending', 'in_progress', 'resolved')),
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -194,12 +292,15 @@ async function initDb() {
   await ensureColumnExists("users", "first_name", "TEXT DEFAULT ''");
   await ensureColumnExists("users", "last_name", "TEXT DEFAULT ''");
   await ensureColumnExists("users", "bio", "TEXT DEFAULT ''");
+  await ensureColumnExists("users", "municipality", "TEXT");
   await ensureColumnExists("users", "profile_image_url", "TEXT");
   await ensureColumnExists("users", "push_token", "TEXT");
+  await ensureColumnExists("reports", "municipality", "TEXT");
 
-  await ensureAdminUser();
+  await ensureAdminUsers();
   await seedCategories();
   await seedDemoReports();
+  await backfillReportMunicipalities();
 
   return db;
 }

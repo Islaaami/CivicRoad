@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
-import { getReports } from "../api/reports";
+import { getMapReports } from "../api/reports";
 import ReportMap from "../components/ReportMap";
+import { useAuth } from "../store/AuthContext";
 
 function MapPage() {
+  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const municipalityLabel = user?.municipality || "your municipality";
 
   useEffect(() => {
     let active = true;
 
     async function loadReports() {
       try {
-        const data = await getReports();
+        const data = await getMapReports();
         if (active) {
           setReports(data);
         }
@@ -42,7 +45,7 @@ function MapPage() {
         <div className="page-header__copy">
           <h1 className="page-header__title">Report map</h1>
           <p className="page-header__text">
-            Spatial view of every report.
+            {`Spatial view of reports assigned to ${municipalityLabel}.`}
           </p>
         </div>
       </section>

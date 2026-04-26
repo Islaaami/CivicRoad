@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const { initDb } = require("./db");
+const attachRequestUser = require("./middleware/attachRequestUser");
 
 const authRoutes = require("./routes/authRoutes");
 const reportRoutes = require("./routes/reportRoutes");
@@ -24,6 +25,7 @@ function getLocalIpv4Addresses() {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(attachRequestUser);
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (_request, response) => {

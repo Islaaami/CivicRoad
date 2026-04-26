@@ -119,6 +119,13 @@ function ReportDetailPage() {
 
           <div className="detail-grid">
             <div className="detail-item">
+              <span className="detail-item__label">Municipality</span>
+              <span className="detail-item__value">
+                {report.municipality || "Unassigned"}
+              </span>
+            </div>
+
+            <div className="detail-item">
               <span className="detail-item__label">Category</span>
               <span className="detail-item__value">
                 {report.category_name || "Uncategorized"}

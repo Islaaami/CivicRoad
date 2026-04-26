@@ -9,18 +9,18 @@ import {
   View,
 } from "react-native";
 import { CompositeScreenProps, useIsFocused } from "@react-navigation/native";
-import { DrawerScreenProps } from "@react-navigation/drawer";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import apiClient from "../api/client";
 import ReportCard from "../components/ReportCard";
 import { useAuth } from "../context/AuthContext";
 import { AppStackParamList } from "../navigation/AppNavigator";
-import { AppDrawerParamList } from "../navigation/DrawerNavigator";
+import { AppTabParamList } from "../navigation/MainTabNavigator";
 import { Report } from "../utils/types";
 import { colors } from "../utils/theme";
 
 type Props = CompositeScreenProps<
-  DrawerScreenProps<AppDrawerParamList, "Reports">,
+  BottomTabScreenProps<AppTabParamList, "Reports">,
   NativeStackScreenProps<AppStackParamList>
 >;
 

@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { getReports } from "../api/reports";
 import ReportsTable from "../components/ReportsTable";
+import { useAuth } from "../store/AuthContext";
 
 function ReportsPage() {
+  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const municipalityLabel = user?.municipality || "your municipality";
 
   useEffect(() => {
     let active = true;
@@ -43,7 +46,7 @@ function ReportsPage() {
         <div className="page-header__copy">
           <h1 className="page-header__title">Reports</h1>
           <p className="page-header__text">
-            Full report table for municipal staff review and follow-up.
+            {`Report table filtered to ${municipalityLabel} for municipal follow-up.`}
           </p>
         </div>
       </section>

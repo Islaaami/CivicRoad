@@ -3,11 +3,14 @@ import { Link } from "react-router-dom";
 import { getReports } from "../api/reports";
 import ReportsTable from "../components/ReportsTable";
 import StatusBadge from "../components/StatusBadge";
+import { useAuth } from "../store/AuthContext";
 
 function DashboardPage() {
+  const { user } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const municipalityLabel = user?.municipality || "your municipality";
 
   useEffect(() => {
     let active = true;
@@ -55,7 +58,7 @@ function DashboardPage() {
         <article className="stat-card">
           <p className="stat-card__label">Total reports</p>
           <p className="stat-card__value">{reports.length}</p>
-          <p className="stat-card__hint">Full city issue queue across all categories.</p>
+          <p className="stat-card__hint">{`Live issue queue for ${municipalityLabel}.`}</p>
         </article>
 
         <article className="stat-card">
@@ -87,7 +90,7 @@ function DashboardPage() {
               <div>
                 <h3 className="section-title">Recent reports</h3>
                 <p className="section-copy">
-                  Latest issues submitted to the municipality.
+                  {`Latest issues submitted inside ${municipalityLabel}.`}
                 </p>
               </div>
 

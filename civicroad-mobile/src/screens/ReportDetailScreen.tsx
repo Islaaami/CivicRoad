@@ -96,6 +96,11 @@ function ReportDetailScreen({ navigation, route }: Props) {
       return;
     }
 
+    if (report.status !== "pending") {
+      Alert.alert("Report locked", "Only pending reports can be edited.");
+      return;
+    }
+
     if (!draftTitle.trim() || !draftDescription.trim()) {
       Alert.alert("Missing details", "Title and description cannot be empty.");
       return;
@@ -112,7 +117,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
       Alert.alert("Report updated", "Your report was updated successfully.", [
         {
           text: "Continue",
-          onPress: () => navigation.navigate("MainDrawer", { screen: "Reports" }),
+          onPress: () => navigation.navigate("MainTabs", { screen: "Reports" }),
         },
       ]);
     } catch (error: any) {
@@ -130,6 +135,11 @@ function ReportDetailScreen({ navigation, route }: Props) {
       return;
     }
 
+    if (report.status !== "pending") {
+      Alert.alert("Report locked", "Only pending reports can be deleted.");
+      return;
+    }
+
     setDeleting(true);
 
     try {
@@ -138,7 +148,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
       Alert.alert("Report deleted", "The report was removed successfully.", [
         {
           text: "Continue",
-          onPress: () => navigation.navigate("MainDrawer", { screen: "Reports" }),
+          onPress: () => navigation.navigate("MainTabs", { screen: "Reports" }),
         },
       ]);
     } catch (error: any) {
@@ -183,6 +193,8 @@ function ReportDetailScreen({ navigation, route }: Props) {
   const imageUrl = getAssetUrl(report.image_url);
   const statusStyle = getStatusStyle(report.status);
   const canManageReport = report.citizen_id === user?.id;
+  const isReportLocked = report.status === "in_progress" || report.status === "resolved";
+  const canEditPendingReport = canManageReport && !isReportLocked;
 
   return (
     <SafeAreaView edges={["bottom"]} style={styles.safeArea}>
@@ -218,7 +230,12 @@ function ReportDetailScreen({ navigation, route }: Props) {
             <View style={styles.actionGroup}>
               {editing ? (
                 <>
-                  <Button loading={saving} onPress={handleSaveReport} title="Save Changes" />
+                  <Button
+                    disabled={isReportLocked}
+                    loading={saving}
+                    onPress={handleSaveReport}
+                    title="Save Changes"
+                  />
                   <Button
                     onPress={() => {
                       setEditing(false);
@@ -231,15 +248,24 @@ function ReportDetailScreen({ navigation, route }: Props) {
                 </>
               ) : (
                 <>
-                  <Button onPress={() => setEditing(true)} title="Edit Report" />
                   <Button
-                    disabled={deleting}
+                    disabled={!canEditPendingReport}
+                    onPress={() => setEditing(true)}
+                    title="Edit Report"
+                  />
+                  <Button
+                    disabled={!canEditPendingReport || deleting}
                     onPress={handleDeletePress}
                     title={deleting ? "Deleting..." : "Delete Report"}
                     variant="secondary"
                   />
                 </>
               )}
+              {isReportLocked ? (
+                <Text style={styles.actionHint}>
+                  Reports can only be edited or deleted while their status is pending.
+                </Text>
+              ) : null}
             </View>
           ) : null}
         </View>
@@ -408,6 +434,11 @@ const styles = StyleSheet.create({
   actionGroup: {
     gap: 10,
     marginTop: 6,
+  },
+  actionHint: {
+    color: colors.textMuted,
+    fontSize: 13,
+    lineHeight: 20,
   },
 });
 

@@ -1,5 +1,9 @@
+const fs = require("fs/promises");
+const path = require("path");
 const { getDb } = require("../db");
 const { normalizeUser } = require("./authController");
+
+const uploadsDirectory = path.join(__dirname, "..", "uploads");
 
 async function getUserById(id) {
   const db = getDb();
@@ -13,6 +17,7 @@ async function getUserById(id) {
         first_name,
         last_name,
         bio,
+        municipality,
         profile_image_url,
         push_token
       FROM users
@@ -20,6 +25,21 @@ async function getUserById(id) {
     `,
     [id]
   );
+}
+
+async function removeUploadedProfileImage(relativePath) {
+  if (!relativePath || !relativePath.startsWith("/uploads/")) {
+    return;
+  }
+
+  const fileName = path.basename(relativePath);
+  const filePath = path.join(uploadsDirectory, fileName);
+
+  try {
+    await fs.unlink(filePath);
+  } catch (_error) {
+    // Ignore missing files so profile updates stay resilient.
+  }
 }
 
 async function getUser(request, response, next) {
@@ -53,14 +73,20 @@ async function updateUser(request, response, next) {
 
     const updates = [];
     const values = [];
+    const nextProfileImageUrl = request.file ? `/uploads/${request.file.filename}` : undefined;
 
     const fieldConfig = [
       ["first_name", request.body.first_name],
       ["last_name", request.body.last_name],
       ["bio", request.body.bio],
-      ["profile_image_url", request.body.profile_image_url],
       ["push_token", request.body.push_token],
     ];
+
+    if (nextProfileImageUrl !== undefined) {
+      fieldConfig.push(["profile_image_url", nextProfileImageUrl]);
+    } else if (request.body.profile_image_url !== undefined) {
+      fieldConfig.push(["profile_image_url", request.body.profile_image_url]);
+    }
 
     for (const [field, value] of fieldConfig) {
       if (value !== undefined) {
@@ -105,6 +131,14 @@ async function updateUser(request, response, next) {
     values.push(request.params.id);
 
     await db.run(`UPDATE users SET ${updates.join(", ")} WHERE id = ?`, values);
+
+    if (
+      nextProfileImageUrl &&
+      user.profile_image_url &&
+      user.profile_image_url !== nextProfileImageUrl
+    ) {
+      await removeUploadedProfileImage(user.profile_image_url);
+    }
 
     const updatedUser = await getUserById(request.params.id);
     response.json(normalizeUser(updatedUser));

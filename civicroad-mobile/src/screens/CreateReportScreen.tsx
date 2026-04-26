@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -11,23 +13,24 @@ import {
   View,
 } from "react-native";
 import { CompositeScreenProps } from "@react-navigation/native";
-import { DrawerScreenProps } from "@react-navigation/drawer";
+import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import MapView, { MapPressEvent, Marker } from "react-native-maps";
 import * as ImagePicker from "expo-image-picker";
+import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import apiClient, { apiBaseUrl } from "../api/client";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
 import { AppStackParamList } from "../navigation/AppNavigator";
-import { AppDrawerParamList } from "../navigation/DrawerNavigator";
+import { AppTabParamList } from "../navigation/MainTabNavigator";
 import { defaultCoordinates } from "../utils/format";
 import { Category, Report } from "../utils/types";
 import { colors, shadows } from "../utils/theme";
 
 type Props = CompositeScreenProps<
-  DrawerScreenProps<AppDrawerParamList, "CreateReport">,
+  BottomTabScreenProps<AppTabParamList, "Create">,
   NativeStackScreenProps<AppStackParamList>
 >;
 
@@ -38,15 +41,24 @@ type SelectedImage = {
   fileSize?: number | null;
 };
 
+const mapRegionDelta = {
+  latitudeDelta: 0.04,
+  longitudeDelta: 0.04,
+};
+
 function CreateReportScreen({ navigation }: Props) {
   const { user } = useAuth();
+  const mapRef = useRef<MapView | null>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+  const [pickerVisible, setPickerVisible] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [requestingLocation, setRequestingLocation] = useState(false);
+  const [showUserLocation, setShowUserLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [coordinate, setCoordinate] = useState(defaultCoordinates);
 
@@ -72,26 +84,7 @@ function CreateReportScreen({ navigation }: Props) {
     }
   }
 
-  async function handlePickImage() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      Alert.alert("Permission needed", "Please allow photo access to attach an image.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      quality: 0.8,
-    });
-
-    if (result.canceled) {
-      return;
-    }
-
-    const asset = result.assets[0];
-
+  function updateSelectedImage(asset: ImagePicker.ImagePickerAsset) {
     if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
       Alert.alert("Image too large", "Please choose an image that is 5MB or smaller.");
       return;
@@ -105,9 +98,97 @@ function CreateReportScreen({ navigation }: Props) {
     });
   }
 
+  async function handleChooseFromGallery() {
+    setPickerVisible(false);
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert("Permission needed", "Please allow photo access to attach an image.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      updateSelectedImage(result.assets[0]);
+    }
+  }
+
+  async function handleTakePhoto() {
+    setPickerVisible(false);
+
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert("Permission needed", "Please allow camera access to take a report photo.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      updateSelectedImage(result.assets[0]);
+    }
+  }
+
   function handleMapPress(event: MapPressEvent) {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setCoordinate({ latitude, longitude });
+  }
+
+  function focusMap(latitude: number, longitude: number) {
+    mapRef.current?.animateToRegion(
+      {
+        latitude,
+        longitude,
+        ...mapRegionDelta,
+      },
+      500
+    );
+  }
+
+  async function handleUseCurrentLocation() {
+    try {
+      setRequestingLocation(true);
+      const permission = await Location.requestForegroundPermissionsAsync();
+
+      if (permission.status !== "granted") {
+        Alert.alert(
+          "Permission needed",
+          "Please allow location access to center the map on your current position."
+        );
+        return;
+      }
+
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+
+      const nextCoordinate = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      };
+
+      setShowUserLocation(true);
+      setCoordinate(nextCoordinate);
+      focusMap(nextCoordinate.latitude, nextCoordinate.longitude);
+    } catch {
+      Alert.alert(
+        "Unable to get location",
+        "Please try again or place the marker manually on the map."
+      );
+    } finally {
+      setRequestingLocation(false);
+    }
   }
 
   function getUploadUri(uri: string) {
@@ -247,10 +328,16 @@ function CreateReportScreen({ navigation }: Props) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Photo</Text>
             <Text style={styles.sectionText}>
-              Upload a photo from your device. Image size must be 5MB or smaller.
+              Add a report photo from your camera or gallery. Image size must be 5MB or smaller.
             </Text>
-            <Button onPress={handlePickImage} title={selectedImage ? "Change Photo" : "Pick Photo"} variant="secondary" />
-            {selectedImage ? <Image source={{ uri: selectedImage.uri }} style={styles.previewImage} /> : null}
+            <Button
+              onPress={() => setPickerVisible(true)}
+              title={selectedImage ? "Change Photo" : "Add Photo"}
+              variant="secondary"
+            />
+            {selectedImage ? (
+              <Image source={{ uri: selectedImage.uri }} style={styles.previewImage} />
+            ) : null}
           </View>
 
           <View style={styles.section}>
@@ -258,13 +345,20 @@ function CreateReportScreen({ navigation }: Props) {
             <Text style={styles.sectionText}>
               Tap anywhere on the map or drag the marker to adjust the report location.
             </Text>
+            <Button
+              loading={requestingLocation}
+              onPress={handleUseCurrentLocation}
+              title="Use My Location"
+              variant="secondary"
+            />
             <MapView
+              ref={mapRef}
               initialRegion={{
                 ...coordinate,
-                latitudeDelta: 0.04,
-                longitudeDelta: 0.04,
+                ...mapRegionDelta,
               }}
               onPress={handleMapPress}
+              showsUserLocation={showUserLocation}
               style={styles.map}
             >
               <Marker
@@ -279,6 +373,45 @@ function CreateReportScreen({ navigation }: Props) {
           <Button loading={submitting} onPress={handleSubmit} title="Submit Report" />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal
+        animationType="fade"
+        onRequestClose={() => setPickerVisible(false)}
+        transparent
+        visible={pickerVisible}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable onPress={() => setPickerVisible(false)} style={StyleSheet.absoluteFillObject} />
+          <View style={styles.sheetCard}>
+            <Text style={styles.sheetTitle}>Add report photo</Text>
+            <Text style={styles.sheetText}>
+              Choose whether you want to capture a new photo or use one from your gallery.
+            </Text>
+
+            <Pressable onPress={handleTakePhoto} style={styles.sheetAction}>
+              <View style={styles.sheetIconWrap}>
+                <Ionicons color={colors.primaryDark} name="camera-outline" size={20} />
+              </View>
+              <View style={styles.sheetCopy}>
+                <Text style={styles.sheetActionTitle}>Take Photo</Text>
+                <Text style={styles.sheetActionText}>Open the camera and capture the issue.</Text>
+              </View>
+            </Pressable>
+
+            <Pressable onPress={handleChooseFromGallery} style={styles.sheetAction}>
+              <View style={styles.sheetIconWrap}>
+                <Ionicons color={colors.primaryDark} name="images-outline" size={20} />
+              </View>
+              <View style={styles.sheetCopy}>
+                <Text style={styles.sheetActionTitle}>Choose from Gallery</Text>
+                <Text style={styles.sheetActionText}>Pick an existing image from your device.</Text>
+              </View>
+            </Pressable>
+
+            <Button onPress={() => setPickerVisible(false)} title="Cancel" variant="secondary" />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -348,6 +481,63 @@ const styles = StyleSheet.create({
   map: {
     height: 260,
     borderRadius: 22,
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(24, 33, 47, 0.42)",
+    padding: 18,
+  },
+  sheetCard: {
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    padding: 20,
+    gap: 14,
+    ...shadows.card,
+  },
+  sheetTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "900",
+  },
+  sheetText: {
+    color: colors.textMuted,
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  sheetAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: "#fffaf3",
+    padding: 16,
+  },
+  sheetIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f5e8da",
+  },
+  sheetCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  sheetActionTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  sheetActionText: {
+    color: colors.textMuted,
+    fontSize: 13,
+    lineHeight: 19,
   },
   coordinateRow: {
     flexDirection: "row",

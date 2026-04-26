@@ -5,6 +5,11 @@ export async function getReports() {
   return response.data;
 }
 
+export async function getMapReports() {
+  const response = await apiClient.get("/reports/map");
+  return response.data;
+}
+
 export async function getReport(reportId) {
   const response = await apiClient.get(`/reports/${reportId}`);
   return response.data;

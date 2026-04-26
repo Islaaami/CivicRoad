@@ -12,6 +12,7 @@ function normalizeUser(user) {
     first_name: user.first_name || "",
     last_name: user.last_name || "",
     bio: user.bio || "",
+    municipality: user.municipality || null,
     profile_image_url: user.profile_image_url || null,
     push_token: user.push_token || null,
   };
@@ -30,6 +31,7 @@ async function getUserByEmail(email) {
         first_name,
         last_name,
         bio,
+        municipality,
         profile_image_url,
         push_token
       FROM users
@@ -51,6 +53,7 @@ async function getUserById(id) {
         first_name,
         last_name,
         bio,
+        municipality,
         profile_image_url,
         push_token
       FROM users

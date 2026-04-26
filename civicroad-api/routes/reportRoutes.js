@@ -2,6 +2,7 @@ const express = require("express");
 const upload = require("../middleware/upload");
 const {
   getReports,
+  getReportsMap,
   getReport,
   createReport,
   updateReport,
@@ -12,6 +13,7 @@ const {
 const router = express.Router();
 
 router.get("/", getReports);
+router.get("/map", getReportsMap);
 router.get("/:id", getReport);
 router.post("/", upload.single("image"), createReport);
 router.patch("/:id", updateReport);

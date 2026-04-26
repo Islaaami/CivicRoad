@@ -1,6 +1,7 @@
 const fs = require("fs/promises");
 const path = require("path");
 const { getDb } = require("../db");
+const { determineMunicipalityFromCoordinates } = require("../utils/municipality");
 
 const VALID_STATUSES = ["pending", "in_progress", "resolved"];
 const uploadsDirectory = path.join(__dirname, "..", "uploads");
@@ -17,8 +18,25 @@ function normalizeReport(report, images = []) {
   };
 }
 
-async function fetchReportById(id) {
+function getAdminScope(requestUser, tableAlias = "reports") {
+  if (requestUser?.role === "admin" && requestUser.municipality) {
+    return {
+      listClause: `WHERE ${tableAlias}.municipality = ?`,
+      itemClause: ` AND ${tableAlias}.municipality = ?`,
+      parameters: [requestUser.municipality],
+    };
+  }
+
+  return {
+    listClause: "",
+    itemClause: "",
+    parameters: [],
+  };
+}
+
+async function fetchReportById(id, requestUser) {
   const db = getDb();
+  const scope = getAdminScope(requestUser);
   const report = await db.get(
     `
       SELECT
@@ -30,6 +48,7 @@ async function fetchReportById(id) {
         reports.description,
         reports.latitude,
         reports.longitude,
+        reports.municipality,
         reports.status,
         reports.created_at,
         (
@@ -41,9 +60,9 @@ async function fetchReportById(id) {
         ) AS image_url
       FROM reports
       LEFT JOIN categories ON categories.id = reports.category_id
-      WHERE reports.id = ?
+      WHERE reports.id = ?${scope.itemClause}
     `,
-    [id]
+    [id, ...scope.parameters]
   );
 
   if (!report) {
@@ -58,10 +77,11 @@ async function fetchReportById(id) {
   return normalizeReport(report, images);
 }
 
-async function getReports(_request, response, next) {
-  try {
-    const db = getDb();
-    const reports = await db.all(`
+async function listReportsForUser(requestUser) {
+  const db = getDb();
+  const scope = getAdminScope(requestUser);
+  const reports = await db.all(
+    `
       SELECT
         reports.id,
         reports.citizen_id,
@@ -71,6 +91,7 @@ async function getReports(_request, response, next) {
         reports.description,
         reports.latitude,
         reports.longitude,
+        reports.municipality,
         reports.status,
         reports.created_at,
         (
@@ -82,10 +103,28 @@ async function getReports(_request, response, next) {
         ) AS image_url
       FROM reports
       LEFT JOIN categories ON categories.id = reports.category_id
+      ${scope.listClause}
       ORDER BY datetime(reports.created_at) DESC, reports.id DESC
-    `);
+    `,
+    scope.parameters
+  );
 
-    response.json(reports.map((report) => normalizeReport(report)));
+  return reports.map((report) => normalizeReport(report));
+}
+
+async function getReports(request, response, next) {
+  try {
+    const reports = await listReportsForUser(request.user);
+    response.json(reports);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getReportsMap(request, response, next) {
+  try {
+    const reports = await listReportsForUser(request.user);
+    response.json(reports);
   } catch (error) {
     next(error);
   }
@@ -93,7 +132,7 @@ async function getReports(_request, response, next) {
 
 async function getReport(request, response, next) {
   try {
-    const report = await fetchReportById(request.params.id);
+    const report = await fetchReportById(request.params.id, request.user);
 
     if (!report) {
       response.status(404).json({
@@ -151,6 +190,10 @@ async function createReport(request, response, next) {
     }
 
     const db = getDb();
+    const municipality = determineMunicipalityFromCoordinates(
+      parsedLatitude,
+      parsedLongitude
+    );
     const category = await db.get("SELECT id FROM categories WHERE id = ?", [
       parsedCategoryId,
     ]);
@@ -184,9 +227,10 @@ async function createReport(request, response, next) {
           description,
           latitude,
           longitude,
+          municipality,
           status
         )
-        VALUES (?, ?, ?, ?, ?, ?, 'pending')
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
       `,
       [
         parsedCitizenId,
@@ -195,6 +239,7 @@ async function createReport(request, response, next) {
         description,
         parsedLatitude,
         parsedLongitude,
+        municipality,
       ]
     );
 
@@ -214,11 +259,18 @@ async function createReport(request, response, next) {
 
 async function updateReport(request, response, next) {
   try {
-    const report = await fetchReportById(request.params.id);
+    const report = await fetchReportById(request.params.id, request.user);
 
     if (!report) {
       response.status(404).json({
         message: "Report not found.",
+      });
+      return;
+    }
+
+    if (report.status !== "pending") {
+      response.status(409).json({
+        message: "Only pending reports can be edited.",
       });
       return;
     }
@@ -244,7 +296,7 @@ async function updateReport(request, response, next) {
       request.params.id,
     ]);
 
-    const updatedReport = await fetchReportById(request.params.id);
+    const updatedReport = await fetchReportById(request.params.id, request.user);
     response.json(updatedReport);
   } catch (error) {
     next(error);
@@ -262,7 +314,7 @@ async function updateReportStatus(request, response, next) {
       return;
     }
 
-    const report = await fetchReportById(request.params.id);
+    const report = await fetchReportById(request.params.id, request.user);
 
     if (!report) {
       response.status(404).json({
@@ -277,7 +329,7 @@ async function updateReportStatus(request, response, next) {
       request.params.id,
     ]);
 
-    const updatedReport = await fetchReportById(request.params.id);
+    const updatedReport = await fetchReportById(request.params.id, request.user);
     response.json(updatedReport);
   } catch (error) {
     next(error);
@@ -287,11 +339,18 @@ async function updateReportStatus(request, response, next) {
 async function deleteReport(request, response, next) {
   try {
     const db = getDb();
-    const report = await fetchReportById(request.params.id);
+    const report = await fetchReportById(request.params.id, request.user);
 
     if (!report) {
       response.status(404).json({
         message: "Report not found.",
+      });
+      return;
+    }
+
+    if (report.status !== "pending") {
+      response.status(409).json({
+        message: "Only pending reports can be deleted.",
       });
       return;
     }
@@ -331,6 +390,7 @@ async function deleteReport(request, response, next) {
 module.exports = {
   VALID_STATUSES,
   getReports,
+  getReportsMap,
   getReport,
   createReport,
   updateReport,

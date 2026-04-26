@@ -21,6 +21,7 @@ const navigationItems = [
 
 function AppShell() {
   const { user, logout } = useAuth();
+  const municipalityLabel = user?.municipality || "Unassigned municipality";
 
   return (
     <div className="app-shell">
@@ -55,6 +56,7 @@ function AppShell() {
         <div className="sidebar-card">
           <p className="sidebar-card__label">Signed In</p>
           <p className="sidebar-card__value">{user?.email}</p>
+          <p className="nav-link__meta">{municipalityLabel}</p>
           <button className="ghost-button" onClick={logout} type="button">
             Log Out
           </button>
@@ -74,7 +76,9 @@ function AppShell() {
 
           <div className="user-chip">
             <span className="user-chip__email">{user?.email}</span>
-            <span className="user-chip__role">{user?.role || "staff"}</span>
+            <span className="user-chip__role">
+              {user?.municipality || user?.role || "staff"}
+            </span>
           </div>
         </header>
 

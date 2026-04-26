@@ -1,11 +1,19 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import apiClient from "../api/client";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import apiClient, { apiBaseUrl } from "../api/client";
 import {
   registerForNotificationsAsync,
   startReportStatusPolling,
   stopReportStatusPolling,
 } from "../services/notificationService";
-import { User } from "../utils/types";
+import { UploadableImage, User } from "../utils/types";
 
 type LoginPayload = {
   email: string;
@@ -28,7 +36,7 @@ type AuthContextValue = {
   login: (payload: LoginPayload) => Promise<User>;
   register: (payload: RegisterPayload) => Promise<User>;
   refreshUser: (userId?: number) => Promise<User>;
-  updateUser: (payload: UpdateUserPayload) => Promise<User>;
+  updateUser: (payload: UpdateUserPayload, profileImage?: UploadableImage | null) => Promise<User>;
   logout: () => void;
 };
 
@@ -37,41 +45,106 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  async function login(payload: LoginPayload) {
+  function getImageName(profileImage: UploadableImage) {
+    if (profileImage.fileName?.trim()) {
+      return profileImage.fileName;
+    }
+
+    const uriFileName = profileImage.uri.split("/").pop();
+
+    if (uriFileName) {
+      return uriFileName;
+    }
+
+    return `profile-${Date.now()}.jpg`;
+  }
+
+  const login = useCallback(async (payload: LoginPayload) => {
     const response = await apiClient.post<User>("/auth/login", payload);
     setUser(response.data);
     return response.data;
-  }
+  }, []);
 
-  async function register(payload: RegisterPayload) {
+  const register = useCallback(async (payload: RegisterPayload) => {
     const response = await apiClient.post<User>("/auth/register", payload);
     return response.data;
-  }
+  }, []);
 
-  async function refreshUser(userId = user?.id) {
-    if (!userId) {
-      throw new Error("A user must be logged in to refresh profile data.");
-    }
+  const refreshUser = useCallback(
+    async (userId = user?.id) => {
+      if (!userId) {
+        throw new Error("A user must be logged in to refresh profile data.");
+      }
 
-    const response = await apiClient.get<User>(`/users/${userId}`);
-    setUser(response.data);
-    return response.data;
-  }
+      const response = await apiClient.get<User>(`/users/${userId}`);
+      setUser(response.data);
+      return response.data;
+    },
+    [user?.id]
+  );
 
-  async function updateUser(payload: UpdateUserPayload) {
-    if (!user?.id) {
-      throw new Error("A user must be logged in to update profile data.");
-    }
+  const updateUser = useCallback(
+    async (payload: UpdateUserPayload, profileImage?: UploadableImage | null) => {
+      if (!user?.id) {
+        throw new Error("A user must be logged in to update profile data.");
+      }
 
-    const response = await apiClient.patch<User>(`/users/${user.id}`, payload);
-    setUser(response.data);
-    return response.data;
-  }
+      if (profileImage) {
+        const formData = new FormData();
 
-  function logout() {
+        for (const [field, value] of Object.entries(payload)) {
+          if (value !== undefined && value !== null) {
+            formData.append(field, String(value));
+          }
+        }
+
+        formData.append("profile_image", {
+          uri: profileImage.uri,
+          name: getImageName(profileImage),
+          type: profileImage.mimeType || "image/jpeg",
+        } as any);
+
+        const response = await fetch(`${apiBaseUrl}/users/${user.id}`, {
+          method: "PATCH",
+          headers: {
+            Accept: "application/json",
+          },
+          body: formData,
+        });
+
+        const rawBody = await response.text();
+        let parsedBody: User | { message?: string } | null = null;
+
+        if (rawBody) {
+          try {
+            parsedBody = JSON.parse(rawBody);
+          } catch {
+            parsedBody = null;
+          }
+        }
+
+        if (!response.ok || !parsedBody || !("id" in parsedBody)) {
+          throw new Error(
+            (parsedBody && "message" in parsedBody ? parsedBody.message : null) ||
+              "Please try again."
+          );
+        }
+
+        setUser(parsedBody);
+        return parsedBody;
+      }
+
+      const response = await apiClient.patch<User>(`/users/${user.id}`, payload);
+      setUser(response.data);
+      return response.data;
+    },
+    [user?.id]
+  );
+
+  const logout = useCallback(() => {
     stopReportStatusPolling();
     setUser(null);
-  }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -119,20 +192,19 @@ function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user?.id, user?.push_token]);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        register,
-        refreshUser,
-        updateUser,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      login,
+      register,
+      refreshUser,
+      updateUser,
+      logout,
+    }),
+    [login, logout, refreshUser, register, updateUser, user]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 function useAuth() {

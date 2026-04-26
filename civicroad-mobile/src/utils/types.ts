@@ -5,8 +5,16 @@ export type User = {
   first_name: string;
   last_name: string;
   bio: string;
+  municipality?: string | null;
   profile_image_url?: string | null;
   push_token?: string | null;
+};
+
+export type UploadableImage = {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+  fileSize?: number | null;
 };
 
 export type Category = {
@@ -30,6 +38,7 @@ export type Report = {
   description: string;
   latitude: number;
   longitude: number;
+  municipality?: string | null;
   status: ReportStatus;
   created_at: string;
   image_url?: string | null;

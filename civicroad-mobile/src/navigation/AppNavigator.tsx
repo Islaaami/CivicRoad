@@ -7,9 +7,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
+import EditProfileScreen from "../screens/EditProfileScreen";
 import ReportDetailScreen from "../screens/ReportDetailScreen";
 import { colors } from "../utils/theme";
-import DrawerNavigator, { AppDrawerParamList } from "./DrawerNavigator";
+import MainTabNavigator, { AppTabParamList } from "./MainTabNavigator";
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -17,8 +18,9 @@ export type AuthStackParamList = {
 };
 
 export type AppStackParamList = {
-  MainDrawer: NavigatorScreenParams<AppDrawerParamList> | undefined;
+  MainTabs: NavigatorScreenParams<AppTabParamList> | undefined;
   ReportDetail: { reportId: number };
+  EditProfile: undefined;
 };
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -76,10 +78,17 @@ function AppNavigator() {
       ) : (
         <AppStack.Navigator screenOptions={sharedScreenOptions}>
           <AppStack.Screen
-            component={DrawerNavigator}
-            name="MainDrawer"
+            component={MainTabNavigator}
+            name="MainTabs"
             options={{
               headerShown: false,
+            }}
+          />
+          <AppStack.Screen
+            component={EditProfileScreen}
+            name="EditProfile"
+            options={{
+              title: "Edit Profile",
             }}
           />
           <AppStack.Screen
