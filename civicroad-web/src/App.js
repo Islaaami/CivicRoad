@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppShell from "./components/AppShell";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
+import FalseReportsPage from "./pages/FalseReportsPage";
 import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapPage";
 import ReportDetailPage from "./pages/ReportDetailPage";
@@ -26,6 +27,7 @@ function App() {
               <Route index element={<DashboardPage />} />
               <Route path="reports" element={<ReportsPage />} />
               <Route path="reports/:reportId" element={<ReportDetailPage />} />
+              <Route path="false-reports" element={<FalseReportsPage />} />
               <Route path="map" element={<MapPage />} />
             </Route>
           </Route>

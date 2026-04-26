@@ -17,6 +17,11 @@ const navigationItems = [
     title: "Map",
     description: "See reports across the city",
   },
+  {
+    to: "/false-reports",
+    title: "False Reports",
+    description: "Review archived false submissions",
+  },
 ];
 
 function AppShell() {

@@ -9,6 +9,7 @@ const attachRequestUser = require("./middleware/attachRequestUser");
 const authRoutes = require("./routes/authRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const falseReportRoutes = require("./routes/falseReportRoutes");
 const userRoutes = require("./routes/userRoutes");
 
 const app = express();
@@ -36,6 +37,7 @@ app.get("/", (_request, response) => {
 
 app.use("/auth", authRoutes);
 app.use("/reports", reportRoutes);
+app.use("/false-reports", falseReportRoutes);
 app.use("/categories", categoryRoutes);
 app.use("/users", userRoutes);
 

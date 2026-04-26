@@ -5,6 +5,11 @@ export async function getReports() {
   return response.data;
 }
 
+export async function getFalseReports() {
+  const response = await apiClient.get("/false-reports");
+  return response.data;
+}
+
 export async function getMapReports() {
   const response = await apiClient.get("/reports/map");
   return response.data;
@@ -20,5 +25,10 @@ export async function updateReportStatus(reportId, status) {
     status,
   });
 
+  return response.data;
+}
+
+export async function markReportAsFalse(reportId) {
+  const response = await apiClient.post(`/reports/${reportId}/false`);
   return response.data;
 }

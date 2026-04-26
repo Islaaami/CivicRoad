@@ -14,6 +14,36 @@ const MUNICIPALITY_CENTERS = [
     latitude: 30.34164,
     longitude: -9.50356,
   },
+  {
+    name: "Taghazout",
+    latitude: 30.5456,
+    longitude: -9.7097,
+  },
+  {
+    name: "Aourir",
+    latitude: 30.4924,
+    longitude: -9.6355,
+  },
+  {
+    name: "Drargua",
+    latitude: 30.3804,
+    longitude: -9.48269,
+  },
+  {
+    name: "Dcheira El Jihadia",
+    latitude: 30.3728,
+    longitude: -9.53889,
+  },
+  {
+    name: "Lqliaa",
+    latitude: 30.2942,
+    longitude: -9.45444,
+  },
+  {
+    name: "Temsia",
+    latitude: 30.3633,
+    longitude: -9.41444,
+  },
 ];
 
 const MAX_ASSIGNMENT_DISTANCE_KM = 20;

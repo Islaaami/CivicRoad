@@ -31,6 +31,48 @@ const MUNICIPALITY_ADMINS = [
     last_name: "Admin",
     municipality: "Ait Melloul",
   },
+  {
+    email: "admin.taghazout@civicroad.ma",
+    password: "admin123",
+    first_name: "Taghazout",
+    last_name: "Admin",
+    municipality: "Taghazout",
+  },
+  {
+    email: "admin.aourir@civicroad.ma",
+    password: "admin123",
+    first_name: "Aourir",
+    last_name: "Admin",
+    municipality: "Aourir",
+  },
+  {
+    email: "admin.drargua@civicroad.ma",
+    password: "admin123",
+    first_name: "Drargua",
+    last_name: "Admin",
+    municipality: "Drargua",
+  },
+  {
+    email: "admin.dcheira@civicroad.ma",
+    password: "admin123",
+    first_name: "Dcheira El Jihadia",
+    last_name: "Admin",
+    municipality: "Dcheira El Jihadia",
+  },
+  {
+    email: "admin.lqliaa@civicroad.ma",
+    password: "admin123",
+    first_name: "Lqliaa",
+    last_name: "Admin",
+    municipality: "Lqliaa",
+  },
+  {
+    email: "admin.temsia@civicroad.ma",
+    password: "admin123",
+    first_name: "Temsia",
+    last_name: "Admin",
+    municipality: "Temsia",
+  },
 ];
 
 async function ensureColumnExists(tableName, columnName, columnDefinition) {
@@ -287,6 +329,21 @@ async function initDb() {
       url TEXT NOT NULL,
       FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS false_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      description TEXT,
+      image_url TEXT,
+      latitude REAL,
+      longitude REAL,
+      address TEXT,
+      category_id INTEGER,
+      municipality TEXT,
+      created_at TEXT,
+      deleted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id)
+    );
   `);
 
   await ensureColumnExists("users", "first_name", "TEXT DEFAULT ''");
@@ -296,6 +353,7 @@ async function initDb() {
   await ensureColumnExists("users", "profile_image_url", "TEXT");
   await ensureColumnExists("users", "push_token", "TEXT");
   await ensureColumnExists("reports", "municipality", "TEXT");
+  await ensureColumnExists("false_reports", "municipality", "TEXT");
 
   await ensureAdminUsers();
   await seedCategories();

@@ -462,7 +462,8 @@
 
 .status-button,
 .button,
-.ghost-button {
+.ghost-button,
+.danger-button {
   cursor: pointer;
   border: 0;
   border-radius: 16px;
@@ -479,6 +480,12 @@
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-dark));
   color: #ffffff;
   box-shadow: 0 16px 30px rgba(201, 106, 35, 0.24);
+}
+
+.danger-button {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(220, 38, 38, 0.22);
 }
 
 .button:hover,
@@ -689,6 +696,61 @@
   object-fit: cover;
   aspect-ratio: 16 / 9;
   margin-top: 1.4rem;
+}
+
+.image-preview-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.image-preview-button:hover .report-image {
+  transform: scale(1.01);
+}
+
+.detail-actions {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1.1rem;
+}
+
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.82);
+}
+
+.image-modal__panel {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 980px);
+  max-height: 100%;
+}
+
+.image-modal__close {
+  justify-self: end;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.image-modal__image {
+  max-width: 100%;
+  max-height: calc(100vh - 8rem);
+  border-radius: 28px;
+  object-fit: contain;
+  background: rgba(15, 23, 42, 0.5);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.4);
 }
 
 .empty-state,
