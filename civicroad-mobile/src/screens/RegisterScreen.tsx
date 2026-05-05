@@ -45,7 +45,7 @@ function RegisterScreen({ navigation }: Props) {
     const { first_name, last_name, email, password } = formValues;
 
     if (!first_name.trim() || !last_name.trim() || !email.trim() || !password.trim()) {
-      setErrorMessage("Please complete every field before registering.");
+      setErrorMessage("Veuillez compléter tous les champs avant l'inscription.");
       return;
     }
 
@@ -62,7 +62,10 @@ function RegisterScreen({ navigation }: Props) {
 
       navigation.navigate("Login");
     } catch (error: any) {
-      setErrorMessage(error.response?.data?.message || "Unable to create your account.");
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Impossible de créer votre compte."
+      );
     } finally {
       setLoading(false);
     }
@@ -77,24 +80,23 @@ function RegisterScreen({ navigation }: Props) {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeText}>Create Account</Text>
+              <Text style={styles.heroBadgeText}>Inscription</Text>
             </View>
-            <Text style={styles.title}>Join your city&apos;s reporting network.</Text>
+            <Text style={styles.title}>Rejoignez le réseau de signalement de votre ville.</Text>
             <Text style={styles.subtitle}>
-              Create a simple citizen account to submit reports, track updates, and see your
-              community contribution badges.
+              Créez un compte citoyen pour envoyer des signalements, suivre les mises à jour et voir vos badges de contribution.
             </Text>
           </View>
 
           <View style={styles.formCard}>
             <Input
-              label="First name"
+              label="Prénom"
               onChangeText={(value) => updateField("first_name", value)}
               placeholder="Ahmed"
               value={formValues.first_name}
             />
             <Input
-              label="Last name"
+              label="Nom"
               onChangeText={(value) => updateField("last_name", value)}
               placeholder="Alami"
               value={formValues.last_name}
@@ -105,25 +107,25 @@ function RegisterScreen({ navigation }: Props) {
               keyboardType="email-address"
               label="Email"
               onChangeText={(value) => updateField("email", value)}
-              placeholder="citizen@civicroad.ma"
+              placeholder="citoyen@civicroad.ma"
               value={formValues.email}
             />
             <Input
               autoCapitalize="none"
               autoCorrect={false}
-              label="Password"
+              label="Mot de passe"
               onChangeText={(value) => updateField("password", value)}
-              placeholder="Create a password"
+              placeholder="Créez un mot de passe"
               secureTextEntry
               value={formValues.password}
             />
 
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
-            <Button loading={loading} onPress={handleRegister} title="Create Account" />
+            <Button loading={loading} onPress={handleRegister} title="Inscription" />
 
             <Pressable onPress={() => navigation.navigate("Login")} style={styles.linkWrap}>
-              <Text style={styles.linkText}>I already have an account</Text>
+              <Text style={styles.linkText}>{"J'ai déjà un compte"}</Text>
             </Pressable>
           </View>
         </ScrollView>

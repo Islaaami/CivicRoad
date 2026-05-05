@@ -19,22 +19,22 @@ import styles from "./AppShell.module.css";
 const navigationItems = [
   {
     to: "/",
-    title: "Dashboard",
+    title: "Tableau de bord",
     icon: "dashboard",
   },
   {
     to: "/reports",
-    title: "Reports",
+    title: "Signalements",
     icon: "reports",
   },
   {
     to: "/map",
-    title: "Map",
+    title: "Carte",
     icon: "map",
   },
   {
     to: "/false-reports",
-    title: "False Reports",
+    title: "Faux signalements",
     icon: "archive",
   },
 ];
@@ -43,36 +43,31 @@ const pageMetadata = [
   {
     path: "/",
     end: true,
-    title: "Dashboard",
-    description:
-      "Municipal Report Summary.",
+    title: "Tableau de bord",
+    description: "Aperçu des signalements de la commune.",
   },
   {
     path: "/reports",
     end: true,
-    title: "Reports Queue",
-    description:
-      "Manage Citizen Submissions.",
+    title: "Signalements",
+    description: "Gérer les signalements citoyens.",
   },
   {
     path: "/reports/:reportId",
-    title: "Report Details",
-    description:
-      "Review evidence and update status.",
+    title: "Détail du signalement",
+    description: "Consulter les preuves et mettre à jour le statut.",
   },
   {
     path: "/map",
     end: true,
-    title: "Map View",
-    description:
-      "Track and validate report locations.",
+    title: "Carte",
+    description: "Suivre et vérifier la localisation des signalements.",
   },
   {
     path: "/false-reports",
     end: true,
-    title: "False Reports",
-    description:
-      "Manage flagged and invalid submissions.",
+    title: "Faux signalements",
+    description: "Consulter les signalements invalides archivés.",
   },
 ];
 
@@ -83,9 +78,9 @@ function getPageMeta(pathname) {
 
   return (
     match || {
-      title: "CivicRoad Dashboard",
+      title: "Tableau de bord CivicRoad",
       description:
-        "Municipality workspace for managing citizen-submitted urban issues.",
+        "Espace communal pour gérer les incidents urbains signalés par les citoyens.",
     }
   );
 }
@@ -94,7 +89,7 @@ function AppShell() {
   const location = useLocation();
   const { logout, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const municipalityLabel = user?.municipality || "Municipality workspace";
+  const municipalityLabel = user?.municipality || "Espace commune";
   const displayName = getUserDisplayName(user);
   const initials = getUserInitials(user);
   const pageMeta = getPageMeta(location.pathname);
@@ -106,7 +101,7 @@ function AppShell() {
   return (
     <div className={styles.shell}>
       <button
-        aria-label="Close navigation"
+        aria-label="Fermer la navigation"
         aria-hidden={!sidebarOpen}
         className={classNames(styles.overlay, sidebarOpen && styles.overlayVisible)}
         onClick={() => setSidebarOpen(false)}
@@ -128,7 +123,7 @@ function AppShell() {
             <span className={styles.brandName}>CivicRoad</span>
           </Link>
 
-          <nav aria-label="Main navigation" className={styles.navList}>
+          <nav aria-label="Navigation principale" className={styles.navList}>
             {navigationItems.map((item) => (
               <NavLink
                 className={({ isActive }) =>
@@ -152,7 +147,7 @@ function AppShell() {
         <header className={styles.topbar}>
           <div className={styles.topbarPrimary}>
             <button
-              aria-label="Open navigation"
+              aria-label="Ouvrir la navigation"
               className={styles.menuButton}
               onClick={() => setSidebarOpen(true)}
               type="button"
@@ -182,7 +177,7 @@ function AppShell() {
               size="sm"
               variant="secondary"
             >
-              Logout
+              Déconnexion
             </Button>
           </div>
         </header>

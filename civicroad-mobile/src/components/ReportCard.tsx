@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { getAssetUrl } from "../api/client";
-import { formatDate } from "../utils/format";
+import { formatCategoryName, formatDate } from "../utils/format";
 import { colors, radii, shadows, spacing, typography } from "../utils/theme";
 import { Report } from "../utils/types";
 import StatusBadge from "./StatusBadge";
@@ -29,7 +29,7 @@ function ReportCard({ report, onPress }: ReportCardProps) {
           <View style={styles.metaRow}>
             <View style={styles.categoryChip}>
               <Text numberOfLines={1} style={styles.categoryText}>
-                {report.category_name || "Uncategorized"}
+                {formatCategoryName(report.category_name)}
               </Text>
             </View>
             <Text style={styles.date}>{formatDate(report.created_at)}</Text>

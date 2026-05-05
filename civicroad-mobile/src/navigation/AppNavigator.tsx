@@ -88,14 +88,14 @@ function AppNavigator() {
             component={EditProfileScreen}
             name="EditProfile"
             options={{
-              title: "Edit Profile",
+              title: "Modifier le profil",
             }}
           />
           <AppStack.Screen
             component={ReportDetailScreen}
             name="ReportDetail"
             options={{
-              title: "Report Detail",
+              title: "Détail du signalement",
             }}
           />
         </AppStack.Navigator>

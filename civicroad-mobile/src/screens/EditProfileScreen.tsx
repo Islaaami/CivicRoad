@@ -47,7 +47,10 @@ function EditProfileScreen({ navigation }: Props) {
 
   function updateSelectedImage(asset: ImagePicker.ImagePickerAsset) {
     if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
-      Alert.alert("Image too large", "Please choose an image that is 5MB or smaller.");
+      Alert.alert(
+        "Image trop volumineuse",
+        "Veuillez choisir une image de 5 Mo maximum."
+      );
       return;
     }
 
@@ -65,7 +68,10 @@ function EditProfileScreen({ navigation }: Props) {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
-      Alert.alert("Permission needed", "Please allow photo access to update your profile image.");
+      Alert.alert(
+        "Autorisation requise",
+        "Veuillez autoriser l'accès aux photos pour mettre à jour votre image de profil."
+      );
       return;
     }
 
@@ -86,7 +92,10 @@ function EditProfileScreen({ navigation }: Props) {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permission.granted) {
-      Alert.alert("Permission needed", "Please allow camera access to take a profile photo.");
+      Alert.alert(
+        "Autorisation requise",
+        "Veuillez autoriser l'accès à l'appareil photo pour prendre une photo de profil."
+      );
       return;
     }
 
@@ -103,7 +112,10 @@ function EditProfileScreen({ navigation }: Props) {
 
   async function handleSaveProfile() {
     if (!formValues.first_name.trim() || !formValues.last_name.trim()) {
-      Alert.alert("Missing details", "First name and last name are required.");
+      Alert.alert(
+        "Informations manquantes",
+        "Le prénom et le nom sont obligatoires."
+      );
       return;
     }
 
@@ -119,8 +131,8 @@ function EditProfileScreen({ navigation }: Props) {
       navigation.goBack();
     } catch (error: any) {
       Alert.alert(
-        "Unable to save profile",
-        error.response?.data?.message || error.message || "Please try again."
+        "Impossible d'enregistrer le profil",
+        error.response?.data?.message || error.message || "Veuillez réessayer."
       );
     } finally {
       setSaving(false);
@@ -137,39 +149,39 @@ function EditProfileScreen({ navigation }: Props) {
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Profile photo</Text>
+            <Text style={styles.sectionTitle}>Photo de profil</Text>
             <Text style={styles.sectionText}>
-              Add a clear profile image using your camera or gallery.
+              Ajoutez une photo de profil claire depuis votre appareil photo ou votre galerie.
             </Text>
             {profilePreviewUri ? (
               <Image source={{ uri: profilePreviewUri }} style={styles.profilePreview} />
             ) : (
               <View style={styles.profilePlaceholder}>
                 <Ionicons color={colors.primaryDark} name="person-outline" size={34} />
-                <Text style={styles.profilePlaceholderText}>No profile image yet</Text>
+                <Text style={styles.profilePlaceholderText}>Aucune photo de profil pour le moment</Text>
               </View>
             )}
             <Button
               onPress={() => setPickerVisible(true)}
-              title={profilePreviewUri ? "Change Photo" : "Add Photo"}
+              title={profilePreviewUri ? "Changer la photo" : "Ajouter une photo"}
               variant="secondary"
             />
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Update your profile</Text>
+            <Text style={styles.sectionTitle}>Mettre à jour le profil</Text>
             <Text style={styles.sectionText}>
-              Keep your name and bio up to date so municipality staff can identify your reports.
+              Gardez votre nom et votre bio à jour pour que les équipes communales puissent identifier vos signalements.
             </Text>
             <Input
-              label="First Name"
+              label="Prénom"
               onChangeText={(value) =>
                 setFormValues((currentValues) => ({ ...currentValues, first_name: value }))
               }
               value={formValues.first_name}
             />
             <Input
-              label="Last Name"
+              label="Nom"
               onChangeText={(value) =>
                 setFormValues((currentValues) => ({ ...currentValues, last_name: value }))
               }
@@ -181,14 +193,14 @@ function EditProfileScreen({ navigation }: Props) {
               onChangeText={(value) =>
                 setFormValues((currentValues) => ({ ...currentValues, bio: value }))
               }
-              placeholder="Tell your city something about you."
+              placeholder="Présentez-vous en quelques mots."
               value={formValues.bio}
             />
           </View>
 
           <View style={styles.footerActions}>
-            <Button loading={saving} onPress={handleSaveProfile} title="Save Changes" />
-            <Button onPress={() => navigation.goBack()} title="Cancel" variant="secondary" />
+            <Button loading={saving} onPress={handleSaveProfile} title="Enregistrer" />
+            <Button onPress={() => navigation.goBack()} title="Annuler" variant="secondary" />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -202,9 +214,9 @@ function EditProfileScreen({ navigation }: Props) {
         <View style={styles.modalBackdrop}>
           <Pressable onPress={() => setPickerVisible(false)} style={StyleSheet.absoluteFillObject} />
           <View style={styles.sheetCard}>
-            <Text style={styles.sheetTitle}>Update profile photo</Text>
+            <Text style={styles.sheetTitle}>Mettre à jour la photo de profil</Text>
             <Text style={styles.sheetText}>
-              Choose whether you want to take a new photo or use one from your gallery.
+              Choisissez entre prendre une nouvelle photo ou en utiliser une depuis votre galerie.
             </Text>
 
             <Pressable onPress={handleTakePhoto} style={styles.sheetAction}>
@@ -212,8 +224,8 @@ function EditProfileScreen({ navigation }: Props) {
                 <Ionicons color={colors.primaryDark} name="camera-outline" size={20} />
               </View>
               <View style={styles.sheetCopy}>
-                <Text style={styles.sheetActionTitle}>Take Photo</Text>
-                <Text style={styles.sheetActionText}>Capture a new profile image now.</Text>
+                <Text style={styles.sheetActionTitle}>Prendre une photo</Text>
+                <Text style={styles.sheetActionText}>Capturer une nouvelle image de profil.</Text>
               </View>
             </Pressable>
 
@@ -222,12 +234,12 @@ function EditProfileScreen({ navigation }: Props) {
                 <Ionicons color={colors.primaryDark} name="images-outline" size={20} />
               </View>
               <View style={styles.sheetCopy}>
-                <Text style={styles.sheetActionTitle}>Choose from Gallery</Text>
-                <Text style={styles.sheetActionText}>Use an existing image from your device.</Text>
+                <Text style={styles.sheetActionTitle}>Choisir depuis la galerie</Text>
+                <Text style={styles.sheetActionText}>Utiliser une image existante depuis votre appareil.</Text>
               </View>
             </Pressable>
 
-            <Button onPress={() => setPickerVisible(false)} title="Cancel" variant="secondary" />
+            <Button onPress={() => setPickerVisible(false)} title="Annuler" variant="secondary" />
           </View>
         </View>
       </Modal>

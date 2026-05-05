@@ -24,7 +24,7 @@ function Badge({ name, iconLabel, detail, unlocked }: BadgeProps) {
 
       <View style={[styles.pill, unlocked ? styles.pillUnlocked : styles.pillLocked]}>
         <Text style={[styles.pillText, unlocked ? styles.pillTextUnlocked : styles.pillTextLocked]}>
-          {unlocked ? "Unlocked" : "Locked"}
+          {unlocked ? "Débloqué" : "Verrouillé"}
         </Text>
       </View>
     </View>

@@ -17,7 +17,7 @@ import Input from "../components/Input";
 import StatusBadge from "../components/StatusBadge";
 import { useAuth } from "../context/AuthContext";
 import { AppStackParamList } from "../navigation/AppNavigator";
-import { formatDate } from "../utils/format";
+import { formatCategoryName, formatDate } from "../utils/format";
 import { Report } from "../utils/types";
 import { colors, shadows } from "../utils/theme";
 
@@ -53,8 +53,8 @@ function ReportDetailScreen({ navigation, route }: Props) {
       } catch (error: any) {
         if (active) {
           Alert.alert(
-            "Unable to load report",
-            error.response?.data?.message || "Please try again."
+            "Impossible de charger le signalement",
+            error.response?.data?.message || "Veuillez réessayer."
           );
         }
       } finally {
@@ -77,12 +77,12 @@ function ReportDetailScreen({ navigation, route }: Props) {
     }
 
     if (report.status !== "pending") {
-      Alert.alert("Report locked", "Only pending reports can be edited.");
+      Alert.alert("Signalement verrouillé", "Seuls les signalements en attente peuvent être modifiés.");
       return;
     }
 
     if (!draftTitle.trim() || !draftDescription.trim()) {
-      Alert.alert("Missing details", "Title and description cannot be empty.");
+      Alert.alert("Informations manquantes", "Le titre et la description ne peuvent pas être vides.");
       return;
     }
 
@@ -94,16 +94,16 @@ function ReportDetailScreen({ navigation, route }: Props) {
         description: draftDescription.trim(),
       });
 
-      Alert.alert("Report updated", "Your report was updated successfully.", [
+      Alert.alert("Signalement mis à jour", "Votre signalement a été mis à jour avec succès.", [
         {
-          text: "Continue",
+          text: "Continuer",
           onPress: () => navigation.navigate("MainTabs", { screen: "Reports" }),
         },
       ]);
     } catch (error: any) {
       Alert.alert(
-        "Unable to update report",
-        error.response?.data?.message || "Please try again."
+        "Impossible de mettre à jour le signalement",
+        error.response?.data?.message || "Veuillez réessayer."
       );
     } finally {
       setSaving(false);
@@ -116,7 +116,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
     }
 
     if (report.status !== "pending") {
-      Alert.alert("Report locked", "Only pending reports can be deleted.");
+      Alert.alert("Signalement verrouillé", "Seuls les signalements en attente peuvent être supprimés.");
       return;
     }
 
@@ -125,16 +125,16 @@ function ReportDetailScreen({ navigation, route }: Props) {
     try {
       await apiClient.delete(`/reports/${report.id}`);
 
-      Alert.alert("Report deleted", "The report was removed successfully.", [
+      Alert.alert("Signalement supprimé", "Le signalement a été supprimé avec succès.", [
         {
-          text: "Continue",
+          text: "Continuer",
           onPress: () => navigation.navigate("MainTabs", { screen: "Reports" }),
         },
       ]);
     } catch (error: any) {
       Alert.alert(
-        "Unable to delete report",
-        error.response?.data?.message || "Please try again."
+        "Impossible de supprimer le signalement",
+        error.response?.data?.message || "Veuillez réessayer."
       );
     } finally {
       setDeleting(false);
@@ -143,15 +143,15 @@ function ReportDetailScreen({ navigation, route }: Props) {
 
   function handleDeletePress() {
     Alert.alert(
-      "Delete report",
-      "Are you sure you want to permanently delete this report?",
+      "Supprimer le signalement",
+      "Voulez-vous vraiment supprimer définitivement ce signalement ?",
       [
         {
-          text: "Cancel",
+          text: "Annuler",
           style: "cancel",
         },
         {
-          text: "Delete",
+          text: "Supprimer",
           style: "destructive",
           onPress: () => {
             void confirmDelete();
@@ -165,7 +165,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
     return (
       <View style={styles.centerState}>
         <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={styles.stateText}>Loading report details...</Text>
+        <Text style={styles.stateText}>Chargement du détail du signalement...</Text>
       </View>
     );
   }
@@ -183,7 +183,11 @@ function ReportDetailScreen({ navigation, route }: Props) {
 
           {editing ? (
             <>
-              <Input label="Title" onChangeText={setDraftTitle} value={draftTitle} />
+              <Input
+                label="Titre"
+                onChangeText={setDraftTitle}
+                value={draftTitle}
+              />
               <Input
                 label="Description"
                 multiline
@@ -195,7 +199,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
             <>
               <Text style={styles.title}>{report.title}</Text>
               <Text style={styles.meta}>
-                {report.category_name || "Uncategorized"} - {formatDate(report.created_at)}
+                {formatCategoryName(report.category_name)} - {formatDate(report.created_at)}
               </Text>
               <Text style={styles.description}>{report.description}</Text>
             </>
@@ -209,7 +213,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
                     disabled={isReportLocked}
                     loading={saving}
                     onPress={handleSaveReport}
-                    title="Save Changes"
+                    title="Enregistrer"
                   />
                   <Button
                     onPress={() => {
@@ -217,7 +221,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
                       setDraftTitle(report.title);
                       setDraftDescription(report.description);
                     }}
-                    title="Cancel"
+                    title="Annuler"
                     variant="secondary"
                   />
                 </>
@@ -226,19 +230,19 @@ function ReportDetailScreen({ navigation, route }: Props) {
                   <Button
                     disabled={!canEditPendingReport}
                     onPress={() => setEditing(true)}
-                    title="Edit Report"
+                    title="Modifier le signalement"
                   />
                   <Button
                     disabled={!canEditPendingReport || deleting}
                     onPress={handleDeletePress}
-                    title={deleting ? "Deleting..." : "Delete Report"}
+                    title={deleting ? "Suppression..." : "Supprimer le signalement"}
                     variant="danger"
                   />
                 </>
               )}
               {isReportLocked ? (
                 <Text style={styles.actionHint}>
-                  Reports can only be edited or deleted while their status is pending.
+                  {"Les signalements ne peuvent être modifiés ou supprimés que lorsqu'ils sont en attente."}
                 </Text>
               ) : null}
             </View>
@@ -249,15 +253,15 @@ function ReportDetailScreen({ navigation, route }: Props) {
           <Image source={{ uri: imageUrl }} style={styles.image} />
         ) : (
           <View style={styles.placeholderCard}>
-            <Text style={styles.placeholderTitle}>No image attached</Text>
+            <Text style={styles.placeholderTitle}>Aucune image jointe</Text>
             <Text style={styles.placeholderText}>
-              This report was submitted without a photo.
+              Ce signalement a été envoyé sans photo.
             </Text>
           </View>
         )}
 
         <View style={styles.mapCard}>
-          <Text style={styles.mapTitle}>Reported location</Text>
+          <Text style={styles.mapTitle}>Localisation signalée</Text>
           <MapView
             initialRegion={{
               latitude: Number(report.latitude),

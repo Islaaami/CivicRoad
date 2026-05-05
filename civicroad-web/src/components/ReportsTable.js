@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { getAssetUrl } from "../api/client";
 import {
+  formatCategoryLabel,
   formatDate,
   getReportPriority,
   truncateText,
@@ -18,10 +19,10 @@ function ReportsTable({
   action,
   className,
   description,
-  emptyDescription = "No reports match the current view. Adjust the filters or wait for new submissions.",
-  emptyTitle = "No reports found",
+  emptyDescription = "Aucun signalement ne correspond à cette vue. Ajustez les filtres ou attendez de nouveaux envois.",
+  emptyTitle = "Aucun signalement trouvé",
   reports,
-  title = "Reports queue",
+  title = "File des signalements",
 }) {
   return (
     <Card className={classNames(sharedStyles.card, className)} padding="none">
@@ -40,11 +41,11 @@ function ReportsTable({
           <table className={sharedStyles.table}>
             <thead>
               <tr>
-                <th>Report</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Submitted</th>
+                <th>Signalement</th>
+                <th>Catégorie</th>
+                <th>Priorité</th>
+                <th>Statut</th>
+                <th>Soumis le</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -73,7 +74,7 @@ function ReportsTable({
                           </div>
                         )}
 
-                        <div className={styles.copy}>
+                          <div className={styles.copy}>
                           <p className={styles.title}>{report.title}</p>
                           <p className={styles.description}>
                             {truncateText(report.description)}
@@ -81,17 +82,17 @@ function ReportsTable({
                           <div className={styles.meta}>
                             <span className={styles.metaItem}>
                               <Icon name="location" size={14} />
-                              {report.municipality || "Municipality not set"}
+                              {report.municipality || "Commune non définie"}
                             </span>
                             <span className={styles.metaItem}>
-                              Report #{report.id}
+                              {`Signalement n°${report.id}`}
                             </span>
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className={sharedStyles.secondaryText}>
-                      {report.category_name || "Uncategorized"}
+                      {formatCategoryLabel(report.category_name)}
                     </td>
                     <td>
                       <PriorityTag priority={getReportPriority(report)} />
@@ -104,7 +105,7 @@ function ReportsTable({
                     </td>
                     <td>
                       <Link className={styles.actionLink} to={`/reports/${report.id}`}>
-                        Open
+                        Ouvrir
                         <Icon name="arrowRight" size={16} />
                       </Link>
                     </td>

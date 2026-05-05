@@ -15,7 +15,7 @@ function MapPage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const municipalityLabel = user?.municipality || "your municipality";
+  const municipalityLabel = user?.municipality || "votre commune";
 
   useEffect(() => {
     let active = true;
@@ -29,7 +29,8 @@ function MapPage() {
       } catch (requestError) {
         if (active) {
           setError(
-            requestError.response?.data?.message || "Unable to load map data."
+            requestError.response?.data?.message ||
+              "Impossible de charger les données de la carte."
           );
         }
       } finally {
@@ -67,53 +68,55 @@ function MapPage() {
         <div className={pageStyles.hero}>
           <div className={pageStyles.heroHeader}>
             <div className={pageStyles.heroCopy}>
-              <span className={pageStyles.eyebrow}>Spatial Intelligence</span>
-              <h1 className={pageStyles.title}>Citywide report map</h1>
+              <span className={pageStyles.eyebrow}>Vue cartographique</span>
+              <h1 className={pageStyles.title}>Carte des signalements</h1>
               <p className={pageStyles.description}>
-                {`Review the spatial distribution of issues in ${municipalityLabel}, identify hotspots, and open the exact report that needs action.`}
+                {`Consultez la répartition géographique des incidents dans ${municipalityLabel}, identifiez les zones sensibles et ouvrez le signalement exact à traiter.`}
               </p>
             </div>
 
             <div className={pageStyles.actions}>
               <Button as={Link} to="/reports" variant="primary">
-                Open reports
+                Ouvrir les signalements
               </Button>
             </div>
           </div>
 
           <div className={pageStyles.summaryGrid}>
             <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>Total</span>
+              <span className={pageStyles.summaryLabel}>
+                Total des signalements
+              </span>
               <strong className={pageStyles.summaryValue}>
                 {mappedReports.length}
               </strong>
               <span className={pageStyles.summaryMeta}>
-                Reports with valid coordinates on the current map view.
+                Signalements avec coordonnées valides sur la carte actuelle.
               </span>
             </div>
             <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>Pending</span>
+              <span className={pageStyles.summaryLabel}>En attente</span>
               <strong className={pageStyles.summaryValue}>{pendingMapped}</strong>
               <span className={pageStyles.summaryMeta}>
-                Open incidents that still need operational follow-up.
+                Incidents ouverts nécessitant encore un suivi opérationnel.
               </span>
             </div>
             <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>In Progress</span>
+              <span className={pageStyles.summaryLabel}>En cours</span>
               <strong className={pageStyles.summaryValue}>
                 {inProgressMapped}
               </strong>
               <span className={pageStyles.summaryMeta}>
-                Issues currently being worked by municipal teams.
+                Incidents actuellement traités par les équipes communales.
               </span>
             </div>
             <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>Resolved</span>
+              <span className={pageStyles.summaryLabel}>Résolu</span>
               <strong className={pageStyles.summaryValue}>
                 {resolvedMapped}
               </strong>
               <span className={pageStyles.summaryMeta}>
-                Completed issues still available for reference on the map.
+                Incidents terminés encore visibles à titre de référence.
               </span>
             </div>
           </div>
@@ -124,18 +127,18 @@ function MapPage() {
 
       {loading ? (
         <LoadingPanel
-          description="Loading report locations, marker styling, and map-side report context."
+          description="Chargement des positions, du style des marqueurs et du contexte cartographique."
           rows={4}
-          title="Loading report map"
+          title="Chargement de la carte"
         />
       ) : (
         <>
           <Card className={styles.legendCard}>
             <div className={pageStyles.sectionHeader}>
               <div className={pageStyles.sectionCopy}>
-                <h2 className={pageStyles.sectionTitle}>Marker legend</h2>
+                <h2 className={pageStyles.sectionTitle}>Légende des marqueurs</h2>
                 <p className={pageStyles.sectionText}>
-                  Marker colors reflect workflow status so teams can scan the map faster.
+                  Les couleurs des marqueurs reflètent le statut pour une lecture plus rapide.
                 </p>
               </div>
             </div>
@@ -143,23 +146,23 @@ function MapPage() {
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={styles.legendDotPending} />
-                Pending
+                En attente
               </span>
               <span className={styles.legendItem}>
                 <span className={styles.legendDotProgress} />
-                In Progress
+                En cours
               </span>
               <span className={styles.legendItem}>
                 <span className={styles.legendDotResolved} />
-                Resolved
+                Résolu
               </span>
             </div>
           </Card>
 
           <ReportMap
-            description="Select a marker or open a report from the side panel to review the full incident."
+            description="Sélectionnez un marqueur ou ouvrez un signalement depuis le panneau latéral pour consulter l'incident complet."
             reports={reports}
-            title="Reports with valid coordinates"
+            title="Signalements avec coordonnées valides"
           />
         </>
       )}

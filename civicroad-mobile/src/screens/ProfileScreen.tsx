@@ -75,8 +75,8 @@ function ProfileScreen({ navigation }: Props) {
       } catch (error: any) {
         if (active) {
           Alert.alert(
-            "Unable to load profile",
-            error.response?.data?.message || "Please try again."
+            "Impossible de charger le profil",
+            error.response?.data?.message || "Veuillez réessayer."
           );
         }
       } finally {
@@ -99,30 +99,30 @@ function ProfileScreen({ navigation }: Props) {
   const badges = useMemo(
     () => [
       {
-        name: "First Report",
+        name: "Premier signalement",
         iconLabel: "1X",
         detail:
           totalReports >= 1
-            ? "You submitted your first community report."
-            : "Submit 1 report to unlock this badge.",
+            ? "Vous avez envoyé votre premier signalement."
+            : "Envoyez 1 signalement pour débloquer ce badge.",
         unlocked: totalReports >= 1,
       },
       {
-        name: "Contributor",
+        name: "Contributeur",
         iconLabel: "5X",
         detail:
           totalReports >= 5
-            ? "You have submitted 5 or more reports."
-            : `${totalReports}/5 reports submitted so far.`,
+            ? "Vous avez envoyé 5 signalements ou plus."
+            : `${totalReports}/5 signalements envoyés pour le moment.`,
         unlocked: totalReports >= 5,
       },
       {
-        name: "Community Hero",
+        name: "Héros citoyen",
         iconLabel: "10R",
         detail:
           resolvedReports >= 10
-            ? "Ten of your reports have already been resolved."
-            : `${resolvedReports}/10 resolved reports so far.`,
+            ? "Dix de vos signalements ont déjà été résolus."
+            : `${resolvedReports}/10 signalements résolus pour le moment.`,
         unlocked: resolvedReports >= 10,
       },
     ],
@@ -130,13 +130,13 @@ function ProfileScreen({ navigation }: Props) {
   );
 
   function handleLogoutPress() {
-    Alert.alert("Logout", "Are you sure you want to end your current session?", [
+    Alert.alert("Déconnexion", "Voulez-vous vraiment fermer votre session actuelle ?", [
       {
-        text: "Cancel",
+        text: "Annuler",
         style: "cancel",
       },
       {
-        text: "Logout",
+        text: "Déconnexion",
         style: "destructive",
         onPress: logout,
       },
@@ -150,7 +150,7 @@ function ProfileScreen({ navigation }: Props) {
     return (
       <View style={styles.centerState}>
         <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={styles.stateText}>Loading your profile...</Text>
+        <Text style={styles.stateText}>Chargement de votre profil...</Text>
       </View>
     );
   }
@@ -168,12 +168,12 @@ function ProfileScreen({ navigation }: Props) {
           </View>
           <View style={styles.heroCopy}>
             <Text style={styles.heroTitle}>
-              {displayedUser.first_name || "Citizen"} {displayedUser.last_name || ""}
+              {displayedUser.first_name || "Citoyen"} {displayedUser.last_name || ""}
             </Text>
             <Text style={styles.heroEmail}>{displayedUser.email}</Text>
             <Text style={styles.heroBio}>
               {displayedUser.bio?.trim() ||
-                "Add a short bio to personalize your CivicRoad profile."}
+                "Ajoutez une courte biographie pour personnaliser votre profil CivicRoad."}
             </Text>
           </View>
         </View>
@@ -193,9 +193,9 @@ function ProfileScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <Button onPress={() => navigation.navigate("EditProfile")} title="Edit Profile" />
+        <Button onPress={() => navigation.navigate("EditProfile")} title="Modifier le profil" />
 
-        <Button onPress={handleLogoutPress} title="Logout" variant="secondary" />
+        <Button onPress={handleLogoutPress} title="Déconnexion" variant="secondary" />
       </ScrollView>
     </SafeAreaView>
   );

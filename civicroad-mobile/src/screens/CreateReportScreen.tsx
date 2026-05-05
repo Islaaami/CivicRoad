@@ -25,7 +25,10 @@ import Input from "../components/Input";
 import { useAuth } from "../context/AuthContext";
 import { AppStackParamList } from "../navigation/AppNavigator";
 import { AppTabParamList } from "../navigation/MainTabNavigator";
-import { defaultCoordinates } from "../utils/format";
+import {
+  defaultCoordinates,
+  formatCategoryName,
+} from "../utils/format";
 import { Category, Report } from "../utils/types";
 import { colors, shadows } from "../utils/theme";
 
@@ -77,8 +80,9 @@ function CreateReportScreen({ navigation }: Props) {
       }
     } catch (error: any) {
       Alert.alert(
-        "Unable to load categories",
-        error.response?.data?.message || "Please check the local API."
+        "Impossible de charger les catégories",
+        error.response?.data?.message ||
+          "Veuillez vérifier l'API locale."
       );
     } finally {
       setLoadingCategories(false);
@@ -87,7 +91,10 @@ function CreateReportScreen({ navigation }: Props) {
 
   function updateSelectedImage(asset: ImagePicker.ImagePickerAsset) {
     if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
-      Alert.alert("Image too large", "Please choose an image that is 5MB or smaller.");
+      Alert.alert(
+        "Image trop volumineuse",
+        "Veuillez choisir une image de 5 Mo maximum."
+      );
       return;
     }
 
@@ -105,7 +112,10 @@ function CreateReportScreen({ navigation }: Props) {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
-      Alert.alert("Permission needed", "Please allow photo access to attach an image.");
+      Alert.alert(
+        "Autorisation requise",
+        "Veuillez autoriser l'accès aux photos pour joindre une image."
+      );
       return;
     }
 
@@ -126,7 +136,10 @@ function CreateReportScreen({ navigation }: Props) {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
 
     if (!permission.granted) {
-      Alert.alert("Permission needed", "Please allow camera access to take a report photo.");
+      Alert.alert(
+        "Autorisation requise",
+        "Veuillez autoriser l'accès à l'appareil photo pour prendre une photo du signalement."
+      );
       return;
     }
 
@@ -164,8 +177,8 @@ function CreateReportScreen({ navigation }: Props) {
 
       if (permission.status !== "granted") {
         Alert.alert(
-          "Permission needed",
-          "Please allow location access to center the map on your current position."
+          "Autorisation requise",
+          "Veuillez autoriser l'accès à votre position pour centrer la carte."
         );
         return;
       }
@@ -184,8 +197,8 @@ function CreateReportScreen({ navigation }: Props) {
       focusMap(nextCoordinate.latitude, nextCoordinate.longitude);
     } catch {
       Alert.alert(
-        "Unable to get location",
-        "Please try again or place the marker manually on the map."
+        "Impossible d'obtenir la position",
+        "Veuillez réessayer ou placer le marqueur manuellement sur la carte."
       );
     } finally {
       setRequestingLocation(false);
@@ -222,12 +235,18 @@ function CreateReportScreen({ navigation }: Props) {
 
   async function handleSubmit() {
     if (!title.trim() || !description.trim() || !selectedCategoryId) {
-      Alert.alert("Missing information", "Please complete the title, description, and category.");
+      Alert.alert(
+        "Informations manquantes",
+        "Veuillez compléter le titre, la description et la catégorie."
+      );
       return;
     }
 
     if (!selectedImage) {
-      Alert.alert("Missing photo", "Please attach an image before submitting.");
+      Alert.alert(
+        "Photo manquante",
+        "Veuillez joindre une image avant l'envoi."
+      );
       return;
     }
 
@@ -269,7 +288,7 @@ function CreateReportScreen({ navigation }: Props) {
       if (!response.ok) {
         throw new Error(
           (parsedBody && "message" in parsedBody ? parsedBody.message : null) ||
-            "Please try again."
+            "Veuillez réessayer."
         );
       }
 
@@ -280,9 +299,9 @@ function CreateReportScreen({ navigation }: Props) {
       });
     } catch (error: any) {
       Alert.alert(
-        "Unable to create report",
+        "Impossible de créer le signalement",
         error.message ||
-          `Please try again. If the issue continues, confirm the API is reachable at ${apiBaseUrl}.`
+          `Veuillez réessayer. Si le problème persiste, vérifiez que l'API est accessible à l'adresse ${apiBaseUrl}.`
       );
     } finally {
       setSubmitting(false);
@@ -297,26 +316,26 @@ function CreateReportScreen({ navigation }: Props) {
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Issue details</Text>
+            <Text style={styles.sectionTitle}>Détails du signalement</Text>
             <Input
-              label="Title"
+              label="Titre"
               onChangeText={setTitle}
-              placeholder="Pothole blocking the right lane"
+              placeholder="Nid-de-poule bloquant la voie de droite"
               value={title}
             />
             <Input
               label="Description"
               multiline
               onChangeText={setDescription}
-              placeholder="Describe what is happening and why it needs attention."
+              placeholder="Décrivez ce qu'il se passe et pourquoi cela demande une intervention."
               value={description}
             />
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Category</Text>
+            <Text style={styles.sectionTitle}>Catégorie</Text>
             {loadingCategories ? (
-              <Text style={styles.sectionText}>Loading categories...</Text>
+              <Text style={styles.sectionText}>Chargement des catégories...</Text>
             ) : (
               <View style={styles.chipWrap}>
                 {categories.map((category) => {
@@ -329,7 +348,7 @@ function CreateReportScreen({ navigation }: Props) {
                       style={[styles.chip, selected ? styles.chipSelected : null]}
                     >
                       <Text style={[styles.chipText, selected ? styles.chipTextSelected : null]}>
-                        {category.name}
+                        {formatCategoryName(category.name)}
                       </Text>
                     </Pressable>
                   );
@@ -341,11 +360,11 @@ function CreateReportScreen({ navigation }: Props) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Photo</Text>
             <Text style={styles.sectionText}>
-              Add a report photo from your camera or gallery. Image size must be 5MB or smaller.
+              Ajoutez une photo depuis votre appareil ou votre galerie. La taille doit être de 5 Mo maximum.
             </Text>
             <Button
               onPress={() => setPickerVisible(true)}
-              title={selectedImage ? "Change Photo" : "Add Photo"}
+              title={selectedImage ? "Changer la photo" : "Ajouter une photo"}
               variant="secondary"
             />
             {selectedImage ? (
@@ -354,14 +373,14 @@ function CreateReportScreen({ navigation }: Props) {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Location</Text>
+            <Text style={styles.sectionTitle}>Localisation</Text>
             <Text style={styles.sectionText}>
-              Tap anywhere on the map or drag the marker to adjust the report location.
+              Touchez la carte ou déplacez le marqueur pour ajuster la position du signalement.
             </Text>
             <Button
               loading={requestingLocation}
               onPress={handleUseCurrentLocation}
-              title="Use My Location"
+              title="Utiliser ma position"
               variant="secondary"
             />
             <MapView
@@ -379,12 +398,12 @@ function CreateReportScreen({ navigation }: Props) {
                 coordinate={coordinate}
                 draggable
                 onDragEnd={(event) => setCoordinate(event.nativeEvent.coordinate)}
-                title="Selected issue location"
+                title="Position sélectionnée"
               />
             </MapView>
           </View>
 
-          <Button loading={submitting} onPress={handleSubmit} title="Submit Report" />
+          <Button loading={submitting} onPress={handleSubmit} title="Créer un signalement" />
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -397,9 +416,9 @@ function CreateReportScreen({ navigation }: Props) {
         <View style={styles.modalBackdrop}>
           <Pressable onPress={() => setPickerVisible(false)} style={StyleSheet.absoluteFillObject} />
           <View style={styles.sheetCard}>
-            <Text style={styles.sheetTitle}>Add report photo</Text>
+            <Text style={styles.sheetTitle}>Ajouter une photo</Text>
             <Text style={styles.sheetText}>
-              Choose whether you want to capture a new photo or use one from your gallery.
+              Choisissez entre prendre une nouvelle photo ou utiliser une image de votre galerie.
             </Text>
 
             <Pressable onPress={handleTakePhoto} style={styles.sheetAction}>
@@ -407,8 +426,10 @@ function CreateReportScreen({ navigation }: Props) {
                 <Ionicons color={colors.primaryDark} name="camera-outline" size={20} />
               </View>
               <View style={styles.sheetCopy}>
-                <Text style={styles.sheetActionTitle}>Take Photo</Text>
-                <Text style={styles.sheetActionText}>Open the camera and capture the issue.</Text>
+                <Text style={styles.sheetActionTitle}>Prendre une photo</Text>
+                <Text style={styles.sheetActionText}>
+                  {"Ouvrir l'appareil photo et capturer l'incident."}
+                </Text>
               </View>
             </Pressable>
 
@@ -417,12 +438,12 @@ function CreateReportScreen({ navigation }: Props) {
                 <Ionicons color={colors.primaryDark} name="images-outline" size={20} />
               </View>
               <View style={styles.sheetCopy}>
-                <Text style={styles.sheetActionTitle}>Choose from Gallery</Text>
-                <Text style={styles.sheetActionText}>Pick an existing image from your device.</Text>
+                <Text style={styles.sheetActionTitle}>Choisir depuis la galerie</Text>
+                <Text style={styles.sheetActionText}>Sélectionner une image existante sur votre appareil.</Text>
               </View>
             </Pressable>
 
-            <Button onPress={() => setPickerVisible(false)} title="Cancel" variant="secondary" />
+            <Button onPress={() => setPickerVisible(false)} title="Annuler" variant="secondary" />
           </View>
         </View>
       </Modal>

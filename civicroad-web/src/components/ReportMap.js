@@ -2,7 +2,10 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import { Link } from "react-router-dom";
 import { classNames } from "../utils/classNames";
-import { getReportPriority } from "../utils/reportPresentation";
+import {
+  formatCategoryLabel,
+  getReportPriority,
+} from "../utils/reportPresentation";
 import PriorityTag from "./PriorityTag";
 import StatusBadge, { formatStatusLabel } from "./StatusBadge";
 import Card from "./ui/Card";
@@ -31,7 +34,7 @@ function buildPopupMarkup(report) {
     <div class="civicroad-map-popup">
       <strong class="civicroad-map-popup__title">${escapeHtml(report.title)}</strong>
       <span class="civicroad-map-popup__meta">${escapeHtml(
-        report.category_name || "Uncategorized"
+        formatCategoryLabel(report.category_name)
       )}</span>
       <span class="civicroad-map-popup__status civicroad-map-popup__status--${escapeHtml(
         report.status || "unknown"
@@ -46,8 +49,8 @@ function ReportMap({
   compact = false,
   reports,
   showList = !compact,
-  title = "Mapped reports",
-  description = "Live markers for reports that include valid coordinates.",
+  title = "Signalements géolocalisés",
+  description = "Marqueurs actifs pour les signalements disposant de coordonnées valides.",
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -152,7 +155,7 @@ function ReportMap({
                   <div className={styles.reportCopy}>
                     <p className={styles.reportTitle}>{report.title}</p>
                     <p className={styles.reportMeta}>
-                      {report.category_name || "Uncategorized"}
+                      {formatCategoryLabel(report.category_name)}
                     </p>
                   </div>
                   <div className={styles.reportBadges}>
@@ -168,9 +171,9 @@ function ReportMap({
           ) : (
             <EmptyState
               compact
-              description="Reports without valid coordinates cannot be placed on the city map."
+              description="Les signalements sans coordonnées valides ne peuvent pas être affichés sur la carte."
               icon="map"
-              title="No mapped reports available"
+              title="Aucun signalement géolocalisé"
             />
           )}
         </Card>

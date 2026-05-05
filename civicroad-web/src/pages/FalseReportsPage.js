@@ -7,7 +7,10 @@ import LoadingPanel from "../components/ui/LoadingPanel";
 import Notice from "../components/ui/Notice";
 import { useAuth } from "../store/AuthContext";
 import pageStyles from "../styles/PageLayout.module.css";
-import { formatDate } from "../utils/reportPresentation";
+import {
+  formatCategoryLabel,
+  formatDate,
+} from "../utils/reportPresentation";
 import sharedTableStyles from "../components/DataTable.module.css";
 import styles from "./FalseReportsPage.module.css";
 
@@ -23,7 +26,7 @@ function formatLocation(falseReport) {
     return `${Number(falseReport.latitude).toFixed(5)}, ${Number(falseReport.longitude).toFixed(5)}`;
   }
 
-  return falseReport.municipality || "Unknown location";
+  return falseReport.municipality || "Localisation inconnue";
 }
 
 function FalseReportsPage() {
@@ -31,7 +34,7 @@ function FalseReportsPage() {
   const [falseReports, setFalseReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const municipalityLabel = user?.municipality || "your municipality";
+  const municipalityLabel = user?.municipality || "votre commune";
 
   useEffect(() => {
     let active = true;
@@ -47,7 +50,7 @@ function FalseReportsPage() {
         if (active) {
           setError(
             requestError.response?.data?.message ||
-              "Unable to load false report archive."
+              "Impossible de charger les archives des faux signalements."
           );
         }
       } finally {
@@ -70,31 +73,33 @@ function FalseReportsPage() {
         <div className={pageStyles.hero}>
           <div className={pageStyles.heroHeader}>
             <div className={pageStyles.heroCopy}>
-              <span className={pageStyles.eyebrow}>Archive Review</span>
-              <h1 className={pageStyles.title}>False reports archive</h1>
+              <span className={pageStyles.eyebrow}>Archives</span>
+              <h1 className={pageStyles.title}>Archives des faux signalements</h1>
               <p className={pageStyles.description}>
-                {`Review archived false submissions from ${municipalityLabel} so moderation decisions remain visible without cluttering the active queue.`}
+                {`Consultez les faux signalements archivés de ${municipalityLabel} afin de conserver un historique clair sans encombrer la file active.`}
               </p>
             </div>
           </div>
 
           <div className={pageStyles.summaryGrid}>
             <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>Archived reports</span>
+              <span className={pageStyles.summaryLabel}>
+                Signalements archivés
+              </span>
               <strong className={pageStyles.summaryValue}>
                 {falseReports.length}
               </strong>
               <span className={pageStyles.summaryMeta}>
-                Historical false submissions retained for internal review.
+                Faux signalements conservés pour consultation interne.
               </span>
             </div>
             <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>Latest archive</span>
+              <span className={pageStyles.summaryLabel}>Dernier archivage</span>
               <strong className={pageStyles.summaryValue}>
                 {falseReports[0] ? formatDate(falseReports[0].deleted_at) : "--"}
               </strong>
               <span className={pageStyles.summaryMeta}>
-                Most recent moderation action currently on record.
+                Action de modération la plus récente enregistrée.
               </span>
             </div>
           </div>
@@ -105,17 +110,17 @@ function FalseReportsPage() {
 
       {loading ? (
         <LoadingPanel
-          description="Loading archived reports, moderation timestamps, and historical metadata."
+          description="Chargement des signalements archivés, horodatages de modération et métadonnées."
           rows={5}
-          title="Loading archive"
+          title="Chargement des archives"
         />
       ) : falseReports.length ? (
         <Card className={sharedTableStyles.card} padding="none">
           <div className={sharedTableStyles.header}>
             <div className={sharedTableStyles.headerCopy}>
-              <h2 className={sharedTableStyles.title}>Archived false reports</h2>
+              <h2 className={sharedTableStyles.title}>Faux signalements archivés</h2>
               <p className={sharedTableStyles.description}>
-                False submissions are removed from the live queue but remain visible here for accountability.
+                Les signalements invalides sont retirés de la file active mais restent visibles ici pour traçabilité.
               </p>
             </div>
           </div>
@@ -124,12 +129,12 @@ function FalseReportsPage() {
             <table className={sharedTableStyles.table}>
               <thead>
                 <tr>
-                  <th>Report</th>
-                  <th>Category</th>
-                  <th>Priority</th>
-                  <th>Location</th>
-                  <th>Reported</th>
-                  <th>Archived</th>
+                  <th>Signalement</th>
+                  <th>Catégorie</th>
+                  <th>Priorité</th>
+                  <th>Localisation</th>
+                  <th>Signalé le</th>
+                  <th>Archivé le</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,16 +144,16 @@ function FalseReportsPage() {
                       <div className={styles.reportCell}>
                         <div className={styles.copy}>
                           <p className={styles.title}>
-                            {falseReport.title || "Untitled report"}
+                            {falseReport.title || "Signalement sans titre"}
                           </p>
                           <p className={styles.description}>
-                            {falseReport.description || "No description provided."}
+                            {falseReport.description || "Aucune description fournie."}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className={sharedTableStyles.secondaryText}>
-                      {falseReport.category_name || "Uncategorized"}
+                      {formatCategoryLabel(falseReport.category_name)}
                     </td>
                     <td>
                       <PriorityTag
@@ -176,9 +181,9 @@ function FalseReportsPage() {
       ) : (
         <Card>
           <EmptyState
-            description="No reports have been archived as false submissions for this municipality yet."
+            description="Aucun signalement n'a encore été archivé comme faux signalement pour cette commune."
             icon="archive"
-            title="Archive is empty"
+            title="Les archives sont vides"
           />
         </Card>
       )}

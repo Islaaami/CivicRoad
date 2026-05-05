@@ -47,8 +47,9 @@ function ReportListScreen({ navigation }: Props) {
         setReports(ownReports);
       } catch (error: any) {
         Alert.alert(
-          "Unable to load reports",
-          error.response?.data?.message || "Please make sure the local API is running."
+          "Impossible de charger les signalements",
+          error.response?.data?.message ||
+            "Vérifiez que l'API locale est bien en cours d'exécution."
         );
       } finally {
         setLoading(false);
@@ -74,9 +75,9 @@ function ReportListScreen({ navigation }: Props) {
     return (
       <View style={styles.centerState}>
         <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={styles.stateTitle}>Loading reports</Text>
+        <Text style={styles.stateTitle}>Chargement des signalements</Text>
         <Text style={styles.stateText}>
-          We&apos;re pulling your latest submitted issues and status updates.
+          Nous récupérons vos derniers signalements et leurs mises à jour.
         </Text>
       </View>
     );
@@ -93,45 +94,45 @@ function ReportListScreen({ navigation }: Props) {
             action={
               <Button
                 onPress={() => navigation.navigate("Create")}
-                title="Create a report"
+                title="Créer un signalement"
               />
             }
-            description="Start with a photo, add the location, and send the issue directly to your municipality."
-            title="No reports yet"
+            description="Ajoutez une photo, la localisation et envoyez l'incident directement à votre commune."
+            title="Aucun signalement pour le moment"
           />
         }
         ListHeaderComponent={
           <View style={styles.headerStack}>
             <View style={styles.sectionCopy}>
-              <Text style={styles.sectionTitle}>Overview</Text>
+              <Text style={styles.sectionTitle}>Aperçu</Text>
               <Text style={styles.sectionText}>
-                Status of reported issues.
+                Statut des incidents signalés.
               </Text>
             </View>
 
             <View style={styles.totalCard}>
-              <Text style={styles.totalLabel}>Total reports</Text>
+              <Text style={styles.totalLabel}>Total des signalements</Text>
               <Text style={styles.totalValue}>{reports.length}</Text>
             </View>
 
             <View style={styles.statusRow}>
               <View style={styles.statusCard}>
                 <View style={styles.statusHeader}>
-                  <Text style={[styles.statusLabel, { color: colors.pending }]}>Pending</Text>
+                  <Text style={[styles.statusLabel, { color: colors.pending }]}>En attente</Text>
                 </View>
                 <Text style={styles.statusValue}>{pendingCount}</Text>
               </View>
 
               <View style={styles.statusCard}>
                 <View style={styles.statusHeader}>
-                  <Text style={[styles.statusLabel, { color: colors.inProgress }]}>InProgress</Text>
+                  <Text style={[styles.statusLabel, { color: colors.inProgress }]}>En cours</Text>
                 </View>
                 <Text style={styles.statusValue}>{inProgressCount}</Text>
               </View>
 
               <View style={styles.statusCard}>
                 <View style={styles.statusHeader}>
-                  <Text style={[styles.statusLabel, { color: colors.resolved }]}>Resolved</Text>
+                  <Text style={[styles.statusLabel, { color: colors.resolved }]}>Résolu</Text>
                 </View>
                 <Text style={styles.statusValue}>{resolvedCount}</Text>
               </View>
@@ -139,9 +140,9 @@ function ReportListScreen({ navigation }: Props) {
 
             <View style={styles.sectionHeader}>
               <View style={styles.sectionCopy}>
-                <Text style={styles.recentTitle}>Reports list</Text>
+                <Text style={styles.recentTitle}>Liste des signalements</Text>
                 <Text style={styles.recentText}>
-                  Open any card to view the full report details.
+                  Ouvrez une carte pour voir le détail complet du signalement.
                 </Text>
               </View>
             </View>

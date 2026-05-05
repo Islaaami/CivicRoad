@@ -42,7 +42,7 @@ function LoginScreen({ navigation }: Props) {
 
   async function handleLogin() {
     if (!email.trim() || !password.trim()) {
-      setErrorMessage("Please enter both email and password.");
+      setErrorMessage("Veuillez saisir l'email et le mot de passe.");
       return;
     }
 
@@ -59,8 +59,8 @@ function LoginScreen({ navigation }: Props) {
       setErrorMessage(
         error.response?.data?.message ||
           (isNetworkError
-            ? `Unable to connect to the CivicRoad API at ${apiBaseUrl}. If you are using Expo Go on a phone, make sure the API is running on your computer and that both devices can reach that address.`
-            : "Unable to connect to the CivicRoad API.")
+            ? `Impossible de se connecter à l'API CivicRoad à l'adresse ${apiBaseUrl}. Si vous utilisez Expo Go sur un téléphone, vérifiez que l'API fonctionne sur votre ordinateur et que les deux appareils peuvent accéder à cette adresse.`
+            : "Impossible de se connecter à l'API CivicRoad.")
       );
     } finally {
       setLoading(false);
@@ -78,40 +78,40 @@ function LoginScreen({ navigation }: Props) {
             <View style={styles.heroBadge}>
               <Text style={styles.heroBadgeText}>CivicRoad</Text>
             </View>
-            <Text style={styles.title}>Report street issues in a few taps.</Text>
+            <Text style={styles.title}>Signalez les incidents urbains en quelques gestes.</Text>
             <Text style={styles.subtitle}>
-              Sign in with the email and password you registered with.
+              {"Connectez-vous avec l'email et le mot de passe associés à votre compte."}
             </Text>
           </View>
 
           <View style={styles.formCard}>
-            <Text style={styles.formTitle}>Login</Text>
+            <Text style={styles.formTitle}>Connexion</Text>
             <Input
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
               label="Email"
               onChangeText={handleEmailChange}
-              placeholder="citizen@civicroad.ma"
+              placeholder="citoyen@civicroad.ma"
               value={email}
             />
 
             <Input
               autoCapitalize="none"
               autoCorrect={false}
-              label="Password"
+              label="Mot de passe"
               onChangeText={handlePasswordChange}
-              placeholder="Enter your password"
+              placeholder="Entrez votre mot de passe"
               secureTextEntry
               value={password}
             />
 
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
-            <Button loading={loading} onPress={handleLogin} title="Continue" />
+            <Button loading={loading} onPress={handleLogin} title="Connexion" />
 
             <Pressable onPress={() => navigation.navigate("Register")} style={styles.linkWrap}>
-              <Text style={styles.linkText}>Don&apos;t have an account? Register</Text>
+              <Text style={styles.linkText}>Pas de compte ? Inscription</Text>
             </Pressable>
           </View>
         </ScrollView>

@@ -37,8 +37,8 @@ async function syncReportStatuses(userId: number) {
     if (previousStatus && previousStatus !== report.status && notificationsGranted) {
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: "Report status updated",
-          body: `Your report "${report.title}" status changed to "${formatStatus(
+          title: "Statut du signalement mis à jour",
+          body: `Le statut de votre signalement "${report.title}" est passé à "${formatStatus(
             report.status
           )}".`,
           data: {
@@ -56,7 +56,7 @@ async function syncReportStatuses(userId: number) {
 export async function registerForNotificationsAsync() {
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("report-status", {
-      name: "Report status",
+      name: "Statut des signalements",
       importance: Notifications.AndroidImportance.DEFAULT,
     });
   }

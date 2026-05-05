@@ -75,24 +75,24 @@ function MainTabNavigator() {
         component={ReportListScreen}
         name="Reports"
         options={{
-          title: "My Reports",
-          tabBarLabel: "Reports",
+          title: "Mes signalements",
+          tabBarLabel: "Signalements",
         }}
       />
       <Tab.Screen
         component={CreateReportScreen}
         name="Create"
         options={{
-          title: "Create Report",
-          tabBarLabel: "Create",
+          title: "Créer signalement",
+          tabBarLabel: "Créer",
         }}
       />
       <Tab.Screen
         component={ProfileScreen}
         name="Profile"
         options={{
-          title: "Profile",
-          tabBarLabel: "Profile",
+          title: "Profil",
+          tabBarLabel: "Profil",
         }}
       />
     </Tab.Navigator>

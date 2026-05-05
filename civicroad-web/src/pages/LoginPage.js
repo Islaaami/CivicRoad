@@ -37,7 +37,8 @@ function LoginPage() {
       navigate(redirectPath, { replace: true });
     } catch (requestError) {
       setError(
-        requestError.response?.data?.message || "Unable to sign in right now."
+        requestError.response?.data?.message ||
+          "Connexion impossible pour le moment."
       );
     } finally {
       setLoading(false);
@@ -71,20 +72,20 @@ function LoginPage() {
                 id="email"
                 name="email"
                 onChange={handleChange}
-                placeholder="staff@municipality.ma"
+                placeholder="agent@commune.ma"
                 required
                 type="email"
                 value={formValues.email}
               />
             </Field>
 
-            <Field htmlFor="password" label="Password">
+            <Field htmlFor="password" label="Mot de passe">
               <Input
                 autoComplete="current-password"
                 id="password"
                 name="password"
                 onChange={handleChange}
-                placeholder="Enter your password"
+                placeholder="Entrez votre mot de passe"
                 required
                 type="password"
                 value={formValues.password}
@@ -95,7 +96,7 @@ function LoginPage() {
           {error ? <Notice>{error}</Notice> : null}
 
           <Button fullWidth loading={loading} size="lg" type="submit">
-            {loading ? "Signing in..." : "Log in"}
+            {loading ? "Connexion..." : "Connexion"}
           </Button>
         </form>
       </Card>

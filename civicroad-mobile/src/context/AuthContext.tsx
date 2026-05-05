@@ -73,7 +73,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(
     async (userId = user?.id) => {
       if (!userId) {
-        throw new Error("A user must be logged in to refresh profile data.");
+        throw new Error("Un utilisateur doit être connecté pour actualiser le profil.");
       }
 
       const response = await apiClient.get<User>(`/users/${userId}`);
@@ -86,7 +86,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const updateUser = useCallback(
     async (payload: UpdateUserPayload, profileImage?: UploadableImage | null) => {
       if (!user?.id) {
-        throw new Error("A user must be logged in to update profile data.");
+        throw new Error("Un utilisateur doit être connecté pour mettre à jour le profil.");
       }
 
       if (profileImage) {
@@ -126,7 +126,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
         if (!response.ok || !parsedBody || !("id" in parsedBody)) {
           throw new Error(
             (parsedBody && "message" in parsedBody ? parsedBody.message : null) ||
-              "Please try again."
+              "Veuillez réessayer."
           );
         }
 
@@ -211,7 +211,7 @@ function useAuth() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider.");
+    throw new Error("useAuth doit être utilisé à l'intérieur d'un AuthProvider.");
   }
 
   return context;

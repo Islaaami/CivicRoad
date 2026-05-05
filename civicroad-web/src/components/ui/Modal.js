@@ -50,7 +50,7 @@ function Modal({ children, description, onClose, open, title }) {
             ) : null}
           </div>
           <Button onClick={onClose} size="sm" variant="secondary">
-            Close
+            Fermer
           </Button>
         </div>
         <div className={styles.body}>{children}</div>

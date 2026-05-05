@@ -24,6 +24,7 @@ import Notice from "../components/ui/Notice";
 import { useAuth } from "../store/AuthContext";
 import pageStyles from "../styles/PageLayout.module.css";
 import {
+  formatCategoryLabel,
   formatDate,
   getReportPriority,
 } from "../utils/reportPresentation";
@@ -37,18 +38,18 @@ const PRIORITY_ORDER = {
 };
 
 const MONTH_LABELS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
+  "janv.",
+  "févr.",
+  "mars",
+  "avr.",
+  "mai",
+  "juin",
+  "juil.",
+  "août",
+  "sept.",
+  "oct.",
+  "nov.",
+  "déc.",
 ];
 
 const STATUS_CHART_COLORS = {
@@ -106,7 +107,7 @@ function DashboardPage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const municipalityLabel = user?.municipality || "your municipality";
+  const municipalityLabel = user?.municipality || "votre commune";
 
   useEffect(() => {
     let active = true;
@@ -122,7 +123,7 @@ function DashboardPage() {
         if (active) {
           setError(
             requestError.response?.data?.message ||
-              "Unable to load dashboard reports."
+              "Impossible de charger les signalements du tableau de bord."
           );
         }
       } finally {
@@ -148,17 +149,17 @@ function DashboardPage() {
   );
   const reportDistribution = [
     {
-      name: "Pending",
+      name: "En attente",
       value: pendingReports.length,
       color: STATUS_CHART_COLORS.pending,
     },
     {
-      name: "In Progress",
+      name: "En cours",
       value: inProgressReports.length,
       color: STATUS_CHART_COLORS.in_progress,
     },
     {
-      name: "Resolved",
+      name: "Résolu",
       value: resolvedReports.length,
       color: STATUS_CHART_COLORS.resolved,
     },
@@ -207,10 +208,14 @@ function DashboardPage() {
       <Card tone="soft">
         <div className={styles.analyticsLayout}>
           <div className={styles.kpiRow}>
-            <KpiCard emphasized label="Total" value={reports.length} />
-            <KpiCard label="Pending" value={pendingReports.length} />
-            <KpiCard label="In Progress" value={inProgressReports.length} />
-            <KpiCard label="Resolved" value={resolvedReports.length} />
+            <KpiCard
+              emphasized
+              label="Total des signalements"
+              value={reports.length}
+            />
+            <KpiCard label="En attente" value={pendingReports.length} />
+            <KpiCard label="En cours" value={inProgressReports.length} />
+            <KpiCard label="Résolu" value={resolvedReports.length} />
           </div>
 
           <div className={styles.chartGrid}>
@@ -218,11 +223,10 @@ function DashboardPage() {
               <div className={pageStyles.sectionHeader}>
                 <div className={pageStyles.sectionCopy}>
                   <h2 className={pageStyles.sectionTitle}>
-                    Reports Distribution
+                    Répartition des signalements
                   </h2>
                   <p className={pageStyles.sectionText}>
-                    Current workflow mix across pending, active, and resolved
-                    reports.
+                    Répartition actuelle entre les signalements en attente, en cours et résolus.
                   </p>
                 </div>
               </div>
@@ -259,7 +263,7 @@ function DashboardPage() {
                   </ResponsiveContainer>
                 ) : (
                   <p className={styles.emptyChartText}>
-                    No report distribution data is available yet.
+                    Aucune donnée de répartition n'est disponible pour le moment.
                   </p>
                 )}
               </div>
@@ -269,10 +273,10 @@ function DashboardPage() {
               <div className={pageStyles.sectionHeader}>
                 <div className={pageStyles.sectionCopy}>
                   <h2 className={pageStyles.sectionTitle}>
-                    Monthly Report Counts
+                    Nombre mensuel de signalements
                   </h2>
                   <p className={pageStyles.sectionText}>
-                    Report volume grouped by submission month.
+                    Volume des signalements regroupé par mois de soumission.
                   </p>
                 </div>
               </div>
@@ -303,7 +307,7 @@ function DashboardPage() {
                     <Tooltip
                       contentStyle={TOOLTIP_CONTENT_STYLE}
                       cursor={{ fill: "rgba(0, 123, 255, 0.08)" }}
-                      formatter={(value) => [value, "Reports"]}
+                      formatter={(value) => [value, "Signalements"]}
                       labelStyle={{ color: "#1f2937", fontWeight: 700 }}
                     />
                     <Bar
@@ -324,9 +328,9 @@ function DashboardPage() {
 
       {loading ? (
         <LoadingPanel
-          description="Preparing the latest queue summary, focus list, and recent report activity."
+          description="Préparation du dernier résumé de file, de la liste prioritaire et de l'activité récente."
           rows={5}
-          title="Loading dashboard"
+          title="Chargement du tableau de bord"
         />
       ) : null}
 
@@ -335,22 +339,21 @@ function DashboardPage() {
           <ReportsTable
             action={
               <Button as={Link} to="/reports" variant="secondary">
-                Full list
+                Liste complète
               </Button>
             }
-            description={`Newest submissions routed to ${municipalityLabel}.`}
+            description={`Derniers signalements attribués à ${municipalityLabel}.`}
             reports={latestReports}
-            title="Recent reports"
+            title="Signalements récents"
           />
 
           <div className={styles.sideColumn}>
             <Card>
               <div className={pageStyles.sectionHeader}>
                 <div className={pageStyles.sectionCopy}>
-                  <h2 className={pageStyles.sectionTitle}>Priority focus</h2>
+                  <h2 className={pageStyles.sectionTitle}>Priorités à suivre</h2>
                   <p className={pageStyles.sectionText}>
-                    Quick access to the reports that deserve the most immediate
-                    staff awareness.
+                    Accès rapide aux signalements qui demandent l'attention la plus immédiate.
                   </p>
                 </div>
               </div>
@@ -366,7 +369,7 @@ function DashboardPage() {
                       <div className={styles.focusCopy}>
                         <p className={styles.focusTitle}>{report.title}</p>
                         <p className={styles.focusMeta}>
-                          {`${report.category_name || "Uncategorized"} - ${formatDate(
+                          {`${formatCategoryLabel(report.category_name)} - ${formatDate(
                             report.created_at
                           )}`}
                         </p>
@@ -382,7 +385,7 @@ function DashboardPage() {
                   ))
                 ) : (
                   <p className={styles.emptyText}>
-                    No reports need immediate attention right now.
+                    Aucun signalement ne demande une attention immédiate pour le moment.
                   </p>
                 )}
               </div>
@@ -391,28 +394,28 @@ function DashboardPage() {
             <Card tone="subtle">
               <div className={pageStyles.sectionHeader}>
                 <div className={pageStyles.sectionCopy}>
-                  <h2 className={pageStyles.sectionTitle}>Workflow balance</h2>
+                  <h2 className={pageStyles.sectionTitle}>Équilibre du traitement</h2>
                   <p className={pageStyles.sectionText}>
-                    A quick distribution of active work across the queue.
+                    Répartition rapide du travail actif dans la file.
                   </p>
                 </div>
               </div>
 
               <div className={styles.metricList}>
                 <div className={styles.metricItem}>
-                  <span className={styles.metricLabel}>Pending</span>
+                  <span className={styles.metricLabel}>En attente</span>
                   <strong className={styles.metricValue}>
                     {pendingReports.length}
                   </strong>
                 </div>
                 <div className={styles.metricItem}>
-                  <span className={styles.metricLabel}>In progress</span>
+                  <span className={styles.metricLabel}>En cours</span>
                   <strong className={styles.metricValue}>
                     {inProgressReports.length}
                   </strong>
                 </div>
                 <div className={styles.metricItem}>
-                  <span className={styles.metricLabel}>Resolved</span>
+                  <span className={styles.metricLabel}>Résolu</span>
                   <strong className={styles.metricValue}>
                     {resolvedReports.length}
                   </strong>

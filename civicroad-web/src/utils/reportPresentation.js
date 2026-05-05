@@ -1,14 +1,22 @@
 const STATUS_LABELS = {
-  pending: "Pending",
-  in_progress: "In Progress",
-  resolved: "Resolved",
+  pending: "En attente",
+  in_progress: "En cours",
+  resolved: "Résolu",
 };
 
 const PRIORITY_LABELS = {
-  none: "None",
-  low: "Low",
-  medium: "Medium",
-  high: "High",
+  none: "Aucune",
+  low: "Faible",
+  medium: "Moyenne",
+  high: "Élevée",
+};
+
+const CATEGORY_LABELS = {
+  "Road Damage": "Chaussée endommagée",
+  Streetlight: "Éclairage public",
+  Waste: "Déchets",
+  "Water Leak": "Fuite d'eau",
+  Obstruction: "Obstruction",
 };
 
 const STATUS_TONES = {
@@ -26,7 +34,7 @@ const PRIORITY_TONES = {
 
 export function formatStatusLabel(status) {
   if (!status) {
-    return "Unknown";
+    return "Inconnu";
   }
 
   return STATUS_LABELS[status] || String(status).replace(/_/g, " ");
@@ -34,10 +42,18 @@ export function formatStatusLabel(status) {
 
 export function formatPriorityLabel(priority) {
   if (!priority) {
-    return "None";
+    return "Aucune";
   }
 
   return PRIORITY_LABELS[priority] || priority;
+}
+
+export function formatCategoryLabel(category) {
+  if (!category) {
+    return "Non catégorisé";
+  }
+
+  return CATEGORY_LABELS[category] || category;
 }
 
 export function getStatusTone(status) {
@@ -54,16 +70,16 @@ export function getReportPriority(report) {
 
 export function formatDate(dateValue) {
   if (!dateValue) {
-    return "Unknown";
+    return "Inconnu";
   }
 
   const parsedDate = new Date(dateValue);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return "Unknown";
+    return "Inconnu";
   }
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("fr-FR", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(parsedDate);
@@ -85,7 +101,7 @@ export function getUserDisplayName(user) {
     .join(" ")
     .trim();
 
-  return fullName || user?.municipality || "Municipality Staff";
+  return fullName || user?.municipality || "Agent communal";
 }
 
 export function getUserInitials(user) {

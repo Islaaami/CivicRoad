@@ -5,16 +5,36 @@ export const defaultCoordinates = {
   longitude: -9.5833,
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  "Road Damage": "Chaussée endommagée",
+  Streetlight: "Éclairage public",
+  Waste: "Déchets",
+  "Water Leak": "Fuite d'eau",
+  Obstruction: "Obstruction",
+};
+
 export function formatStatus(status: ReportStatus) {
-  if (status === "in_progress") {
-    return "In Progress";
+  if (status === "pending") {
+    return "En attente";
   }
 
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  if (status === "in_progress") {
+    return "En cours";
+  }
+
+  return "Résolu";
+}
+
+export function formatCategoryName(categoryName?: string | null) {
+  if (!categoryName) {
+    return "Non catégorisé";
+  }
+
+  return CATEGORY_LABELS[categoryName] || categoryName;
 }
 
 export function formatDate(dateValue: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("fr-FR", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(dateValue));

@@ -19,6 +19,7 @@ import Modal from "../components/ui/Modal";
 import Notice from "../components/ui/Notice";
 import pageStyles from "../styles/PageLayout.module.css";
 import {
+  formatCategoryLabel,
   formatDate,
   getReportPriority,
 } from "../utils/reportPresentation";
@@ -28,36 +29,36 @@ import styles from "./ReportDetailPage.module.css";
 const STATUS_OPTIONS = [
   {
     value: "pending",
-    label: "Pending",
-    description: "Waiting for review or assignment.",
+    label: "En attente",
+    description: "En attente de revue ou d'affectation.",
   },
   {
     value: "in_progress",
-    label: "In Progress",
-    description: "Assigned and being worked.",
+    label: "En cours",
+    description: "Attribué et en cours de traitement.",
   },
   {
     value: "resolved",
-    label: "Resolved",
-    description: "Completed and ready for reference.",
+    label: "Résolu",
+    description: "Terminé et conservé à titre de référence.",
   },
 ];
 
 const PRIORITY_OPTIONS = [
   {
     value: "low",
-    label: "Low",
-    description: "Minor disruption with limited urgency.",
+    label: "Faible",
+    description: "Perturbation mineure avec urgence limitée.",
   },
   {
     value: "medium",
-    label: "Medium",
-    description: "Needs action soon within normal workflow.",
+    label: "Moyenne",
+    description: "Nécessite une action prochainement dans le flux normal.",
   },
   {
     value: "high",
-    label: "High",
-    description: "Urgent issue that deserves faster handling.",
+    label: "Élevée",
+    description: "Incident urgent qui demande un traitement plus rapide.",
   },
 ];
 
@@ -84,7 +85,8 @@ function ReportDetailPage() {
       } catch (requestError) {
         if (active) {
           setError(
-            requestError.response?.data?.message || "Unable to load report."
+            requestError.response?.data?.message ||
+              "Impossible de charger le signalement."
           );
         }
       } finally {
@@ -114,7 +116,8 @@ function ReportDetailPage() {
       setReport(updatedReport);
     } catch (requestError) {
       setError(
-        requestError.response?.data?.message || "Unable to update report status."
+        requestError.response?.data?.message ||
+          "Impossible de mettre à jour le statut du signalement."
       );
     } finally {
       setStatusLoading("");
@@ -135,7 +138,7 @@ function ReportDetailPage() {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to update report priority."
+          "Impossible de mettre à jour la priorité du signalement."
       );
     } finally {
       setPriorityLoading("");
@@ -148,7 +151,7 @@ function ReportDetailPage() {
     }
 
     const confirmed = window.confirm(
-      "Archive this report as a false report and remove it from the active report list?"
+      "Archiver ce signalement comme faux signalement et le retirer de la liste active ?"
     );
 
     if (!confirmed) {
@@ -164,7 +167,7 @@ function ReportDetailPage() {
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          "Unable to archive this false report right now."
+          "Impossible d'archiver ce faux signalement pour le moment."
       );
       setFalseReportLoading(false);
     }
@@ -173,9 +176,9 @@ function ReportDetailPage() {
   if (loading) {
     return (
       <LoadingPanel
-        description="Loading the report summary, evidence, map position, and workflow controls."
+        description="Chargement du résumé, des preuves, de la position sur la carte et des contrôles de traitement."
         rows={5}
-        title="Loading report details"
+        title="Chargement du détail du signalement"
       />
     );
   }
@@ -190,12 +193,12 @@ function ReportDetailPage() {
         <EmptyState
           action={
             <Button as={Link} to="/reports" variant="secondary">
-              Back to reports
+              Retour aux signalements
             </Button>
           }
-          description="The requested report could not be found or is no longer available in the queue."
+          description="Le signalement demandé est introuvable ou n'est plus disponible dans la file."
           icon="reports"
-          title="Report unavailable"
+          title="Signalement indisponible"
         />
       </Card>
     );
@@ -214,7 +217,7 @@ function ReportDetailPage() {
           to="/reports"
           variant="secondary"
         >
-          Back to reports
+          Retour aux signalements
         </Button>
       </div>
 
@@ -226,7 +229,9 @@ function ReportDetailPage() {
             <div className={styles.badgeRow}>
               <StatusBadge status={report.status} />
               <PriorityTag priority={reportPriority} />
-              <span className={styles.reportId}>Report #{report.id}</span>
+              <span className={styles.reportId}>
+                {`Signalement n°${report.id}`}
+              </span>
             </div>
 
             <div className={styles.summaryCopy}>
@@ -236,19 +241,19 @@ function ReportDetailPage() {
 
             <div className={styles.metaGrid}>
               <div className={styles.metaItem}>
-                <span className={styles.metaLabel}>Municipality</span>
+                <span className={styles.metaLabel}>Commune</span>
                 <span className={styles.metaValue}>
-                  {report.municipality || "Unassigned"}
+                  {report.municipality || "Non attribuée"}
                 </span>
               </div>
               <div className={styles.metaItem}>
-                <span className={styles.metaLabel}>Category</span>
+                <span className={styles.metaLabel}>Catégorie</span>
                 <span className={styles.metaValue}>
-                  {report.category_name || "Uncategorized"}
+                  {formatCategoryLabel(report.category_name)}
                 </span>
               </div>
               <div className={styles.metaItem}>
-                <span className={styles.metaLabel}>Submitted</span>
+                <span className={styles.metaLabel}>Soumis le</span>
                 <span className={styles.metaValue}>
                   {formatDate(report.created_at)}
                 </span>
@@ -259,9 +264,9 @@ function ReportDetailPage() {
           <Card>
             <div className={pageStyles.sectionHeader}>
               <div className={pageStyles.sectionCopy}>
-                <h2 className={pageStyles.sectionTitle}>Attached evidence</h2>
+                <h2 className={pageStyles.sectionTitle}>Preuve jointe</h2>
                 <p className={pageStyles.sectionText}>
-                  Review the submitted image before taking action on the report.
+                  Consultez l'image envoyée avant d'agir sur le signalement.
                 </p>
               </div>
 
@@ -271,7 +276,7 @@ function ReportDetailPage() {
                   size="sm"
                   variant="secondary"
                 >
-                  Expand image
+                  Agrandir l'image
                 </Button>
               ) : null}
             </div>
@@ -291,9 +296,9 @@ function ReportDetailPage() {
             ) : (
               <EmptyState
                 compact
-                description="The citizen did not attach an image to this report."
+                description="Aucune image n'a été jointe à ce signalement."
                 icon="image"
-                title="No image attached"
+                title="Aucune image jointe"
               />
             )}
           </Card>
@@ -301,9 +306,9 @@ function ReportDetailPage() {
           <Card>
             <div className={pageStyles.sectionHeader}>
               <div className={pageStyles.sectionCopy}>
-                <h2 className={pageStyles.sectionTitle}>Location</h2>
+                <h2 className={pageStyles.sectionTitle}>Localisation</h2>
                 <p className={pageStyles.sectionText}>
-                  Confirm the report position on the map before dispatching or resolving the issue.
+                  Vérifiez la position du signalement sur la carte avant intervention ou clôture.
                 </p>
               </div>
             </div>
@@ -316,16 +321,16 @@ function ReportDetailPage() {
           <Card>
             <div className={pageStyles.sectionHeader}>
               <div className={pageStyles.sectionCopy}>
-                <h2 className={pageStyles.sectionTitle}>Workflow controls</h2>
+                <h2 className={pageStyles.sectionTitle}>Contrôles de traitement</h2>
                 <p className={pageStyles.sectionText}>
-                  Update the service state and severity so the queue stays accurate.
+                  Mettez à jour le statut et la gravité pour garder la file fiable.
                 </p>
               </div>
             </div>
 
             <div className={styles.controlSection}>
               <div className={styles.controlHeader}>
-                <span className={styles.controlLabel}>Status</span>
+                <span className={styles.controlLabel}>Statut</span>
                 <span className={styles.controlValue}>
                   {formatStatusLabel(report.status)}
                 </span>
@@ -346,7 +351,7 @@ function ReportDetailPage() {
                   >
                     <span className={styles.optionTitle}>
                       {statusLoading === statusOption.value
-                        ? "Saving..."
+                        ? "Enregistrement..."
                         : statusOption.label}
                     </span>
                     <span className={styles.optionDescription}>
@@ -359,7 +364,7 @@ function ReportDetailPage() {
 
             <div className={styles.controlSection}>
               <div className={styles.controlHeader}>
-                <span className={styles.controlLabel}>Priority</span>
+                <span className={styles.controlLabel}>Priorité</span>
                 <span className={styles.controlValue}>
                   {formatPriorityLabel(reportPriority)}
                 </span>
@@ -380,7 +385,7 @@ function ReportDetailPage() {
                   >
                     <span className={styles.optionTitle}>
                       {priorityLoading === priorityOption.value
-                        ? "Saving..."
+                        ? "Enregistrement..."
                         : priorityOption.label}
                     </span>
                     <span className={styles.optionDescription}>
@@ -395,30 +400,30 @@ function ReportDetailPage() {
           <Card tone="subtle">
             <div className={pageStyles.sectionHeader}>
               <div className={pageStyles.sectionCopy}>
-                <h2 className={pageStyles.sectionTitle}>Report facts</h2>
+                <h2 className={pageStyles.sectionTitle}>Informations du signalement</h2>
                 <p className={pageStyles.sectionText}>
-                  A concise operational summary for triage and follow-up.
+                  Résumé opérationnel concis pour le tri et le suivi.
                 </p>
               </div>
             </div>
 
             <div className={styles.factList}>
               <div className={styles.factItem}>
-                <span className={styles.factLabel}>Current status</span>
+                <span className={styles.factLabel}>Statut actuel</span>
                 <span className={styles.factValue}>
                   {formatStatusLabel(report.status)}
                 </span>
               </div>
               <div className={styles.factItem}>
-                <span className={styles.factLabel}>Current priority</span>
+                <span className={styles.factLabel}>Priorité actuelle</span>
                 <span className={styles.factValue}>
                   {formatPriorityLabel(reportPriority)}
                 </span>
               </div>
               <div className={styles.factItem}>
-                <span className={styles.factLabel}>Category</span>
+                <span className={styles.factLabel}>Catégorie</span>
                 <span className={styles.factValue}>
-                  {report.category_name || "Uncategorized"}
+                  {formatCategoryLabel(report.category_name)}
                 </span>
               </div>
             </div>
@@ -427,9 +432,9 @@ function ReportDetailPage() {
           <Card>
             <div className={pageStyles.sectionHeader}>
               <div className={pageStyles.sectionCopy}>
-                <h2 className={pageStyles.sectionTitle}>Moderation</h2>
+                <h2 className={pageStyles.sectionTitle}>Modération</h2>
                 <p className={pageStyles.sectionText}>
-                  Archive false submissions so the active operations queue stays clean.
+                  Archivez les faux signalements afin de garder la file active propre.
                 </p>
               </div>
             </div>
@@ -440,14 +445,14 @@ function ReportDetailPage() {
               onClick={handleMarkFalseReport}
               variant="danger"
             >
-              {falseReportLoading ? "Archiving..." : "Mark as false report"}
+              {falseReportLoading ? "Archivage..." : "Marquer comme faux signalement"}
             </Button>
           </Card>
         </div>
       </div>
 
       <Modal
-        description="Full-size evidence submitted with this report."
+        description="Preuve en taille réelle jointe à ce signalement."
         onClose={() => setImageModalOpen(false)}
         open={imageModalOpen && Boolean(reportImageUrl)}
         title={report.title}

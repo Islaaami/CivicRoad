@@ -6,12 +6,12 @@ function LoadingPanel({
   className,
   description,
   rows = 4,
-  title = "Loading",
+  title = "Chargement",
 }) {
   return (
     <Card className={classNames(styles.panel, className)} tone="subtle">
       <div className={styles.copy}>
-        <span className={styles.eyebrow}>Loading</span>
+        <span className={styles.eyebrow}>Chargement</span>
         <h2 className={styles.title}>{title}</h2>
         {description ? <p className={styles.description}>{description}</p> : null}
       </div>
