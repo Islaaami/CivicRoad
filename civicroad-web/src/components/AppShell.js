@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Link,
   NavLink,
   Outlet,
   matchPath,
@@ -19,25 +20,21 @@ const navigationItems = [
   {
     to: "/",
     title: "Dashboard",
-    description: "Operations overview",
     icon: "dashboard",
   },
   {
     to: "/reports",
     title: "Reports",
-    description: "Manage submitted issues",
     icon: "reports",
   },
   {
     to: "/map",
     title: "Map",
-    description: "Inspect reports spatially",
     icon: "map",
   },
   {
     to: "/false-reports",
     title: "False Reports",
-    description: "Review archived submissions",
     icon: "archive",
   },
 ];
@@ -46,36 +43,36 @@ const pageMetadata = [
   {
     path: "/",
     end: true,
-    title: "Municipal Operations Overview",
+    title: "Dashboard",
     description:
-      "Keep incoming issues triaged, visible, and moving through the service workflow.",
+      "Municipal Report Summary.",
   },
   {
     path: "/reports",
     end: true,
     title: "Reports Queue",
     description:
-      "Search, filter, and review every citizen report assigned to your municipality.",
+      "Manage Citizen Submissions.",
   },
   {
     path: "/reports/:reportId",
-    title: "Report Review",
+    title: "Report Details",
     description:
-      "Inspect evidence, adjust workflow status, and confirm the issue details before action.",
+      "Review evidence and update status.",
   },
   {
     path: "/map",
     end: true,
-    title: "Spatial Report View",
+    title: "Map View",
     description:
-      "Use the city map to spot clusters, validate coordinates, and coordinate field response.",
+      "Track and validate report locations.",
   },
   {
     path: "/false-reports",
     end: true,
-    title: "False Report Archive",
+    title: "False Reports",
     description:
-      "Monitor archived submissions so the active queue stays focused on real incidents.",
+      "Manage flagged and invalid submissions.",
   },
 ];
 
@@ -124,19 +121,12 @@ function AppShell() {
         )}
       >
         <div className={styles.sidebarInner}>
-          <div className={styles.brandBlock}>
+          <Link className={styles.brand} to="/">
             <div className={styles.brandMark}>
               <Icon name="road" size={22} />
             </div>
-            <div className={styles.brandCopy}>
-              <span className={styles.brandBadge}>CivicRoad</span>
-              <h1 className={styles.brandTitle}>Municipality Control Center</h1>
-              <p className={styles.brandText}>
-                A calm, structured workspace for triage, investigation, and
-                service follow-up across the city.
-              </p>
-            </div>
-          </div>
+            <span className={styles.brandName}>CivicRoad</span>
+          </Link>
 
           <nav aria-label="Main navigation" className={styles.navList}>
             {navigationItems.map((item) => (
@@ -151,24 +141,10 @@ function AppShell() {
                 <span className={styles.navIcon}>
                   <Icon name={item.icon} size={18} />
                 </span>
-                <span className={styles.navCopy}>
-                  <span className={styles.navTitle}>{item.title}</span>
-                  <span className={styles.navDescription}>
-                    {item.description}
-                  </span>
-                </span>
+                <span className={styles.navTitle}>{item.title}</span>
               </NavLink>
             ))}
           </nav>
-
-          <div className={styles.sidebarCard}>
-            <span className={styles.sidebarLabel}>Current municipality</span>
-            <strong className={styles.sidebarValue}>{municipalityLabel}</strong>
-            <p className={styles.sidebarText}>
-              Logged in as {user?.email}. Route work carefully, archive noise,
-              and keep citizens informed through timely status changes.
-            </p>
-          </div>
         </div>
       </aside>
 

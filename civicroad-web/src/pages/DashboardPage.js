@@ -1,5 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  CartesianGrid,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { getReports } from "../api/reports";
 import PriorityTag from "../components/PriorityTag";
 import ReportsTable from "../components/ReportsTable";
@@ -22,6 +35,71 @@ const PRIORITY_ORDER = {
   low: 2,
   none: 3,
 };
+
+const MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+const STATUS_CHART_COLORS = {
+  pending: "#f97316",
+  in_progress: "#7c3aed",
+  resolved: "#10b981",
+};
+
+const AXIS_TICK_STYLE = {
+  fill: "#6b7280",
+  fontSize: 12,
+  fontWeight: 600,
+};
+
+const TOOLTIP_CONTENT_STYLE = {
+  border: "1px solid #e0e6ed",
+  borderRadius: "16px",
+  boxShadow: "0 20px 40px rgba(15, 23, 42, 0.12)",
+};
+
+function KpiCard({ emphasized = false, label, value }) {
+  return (
+    <Card
+      className={
+        emphasized
+          ? `${styles.kpiCard} ${styles.kpiCardPrimary}`
+          : styles.kpiCard
+      }
+      padding={emphasized ? "lg" : "md"}
+    >
+      <span
+        className={
+          emphasized
+            ? `${styles.kpiLabel} ${styles.kpiLabelPrimary}`
+            : styles.kpiLabel
+        }
+      >
+        {label}
+      </span>
+      <strong
+        className={
+          emphasized
+            ? `${styles.kpiValue} ${styles.kpiValuePrimary}`
+            : styles.kpiValue
+        }
+      >
+        {value}
+      </strong>
+    </Card>
+  );
+}
 
 function DashboardPage() {
   const { user } = useAuth();
@@ -65,9 +143,44 @@ function DashboardPage() {
   const inProgressReports = reports.filter(
     (report) => report.status === "in_progress"
   );
-  const highPriorityReports = reports.filter(
-    (report) => getReportPriority(report) === "high"
+  const resolvedReports = reports.filter(
+    (report) => report.status === "resolved"
   );
+  const reportDistribution = [
+    {
+      name: "Pending",
+      value: pendingReports.length,
+      color: STATUS_CHART_COLORS.pending,
+    },
+    {
+      name: "In Progress",
+      value: inProgressReports.length,
+      color: STATUS_CHART_COLORS.in_progress,
+    },
+    {
+      name: "Resolved",
+      value: resolvedReports.length,
+      color: STATUS_CHART_COLORS.resolved,
+    },
+  ];
+  const hasDistributionData = reportDistribution.some(
+    (entry) => entry.value > 0
+  );
+  const monthlyReportCounts = MONTH_LABELS.map((month) => ({
+    month,
+    count: 0,
+  }));
+
+  reports.forEach((report) => {
+    const createdAt = new Date(report.created_at);
+
+    if (Number.isNaN(createdAt.getTime())) {
+      return;
+    }
+
+    monthlyReportCounts[createdAt.getMonth()].count += 1;
+  });
+
   const latestReports = reports.slice(0, 5);
   const focusReports = reports
     .filter(
@@ -92,64 +205,117 @@ function DashboardPage() {
   return (
     <div className={pageStyles.stack}>
       <Card tone="soft">
-        <div className={pageStyles.hero}>
-          <div className={pageStyles.heroHeader}>
-            <div className={pageStyles.heroCopy}>
-              <span className={pageStyles.eyebrow}>Operations Snapshot</span>
-              <h1 className={pageStyles.title}>Keep the city queue moving.</h1>
-              <p className={pageStyles.description}>
-                {`Monitor the active service queue for ${municipalityLabel}, spot urgent cases early, and jump into the latest reports without losing context.`}
-              </p>
-            </div>
-
-            <div className={pageStyles.actions}>
-              <Button as={Link} to="/reports" variant="primary">
-                Open reports
-              </Button>
-              <Button as={Link} to="/map" variant="secondary">
-                View map
-              </Button>
-            </div>
+        <div className={styles.analyticsLayout}>
+          <div className={styles.kpiRow}>
+            <KpiCard emphasized label="Total" value={reports.length} />
+            <KpiCard label="Pending" value={pendingReports.length} />
+            <KpiCard label="In Progress" value={inProgressReports.length} />
+            <KpiCard label="Resolved" value={resolvedReports.length} />
           </div>
 
-          <div className={pageStyles.summaryGrid}>
-            <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>Total reports</span>
-              <strong className={pageStyles.summaryValue}>{reports.length}</strong>
-              <span className={pageStyles.summaryMeta}>
-                Live queue currently assigned to your municipality.
-              </span>
-            </div>
+          <div className={styles.chartGrid}>
+            <Card className={styles.chartCard} tone="subtle">
+              <div className={pageStyles.sectionHeader}>
+                <div className={pageStyles.sectionCopy}>
+                  <h2 className={pageStyles.sectionTitle}>
+                    Reports Distribution
+                  </h2>
+                  <p className={pageStyles.sectionText}>
+                    Current workflow mix across pending, active, and resolved
+                    reports.
+                  </p>
+                </div>
+              </div>
 
-            <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>Pending</span>
-              <strong className={pageStyles.summaryValue}>
-                {pendingReports.length}
-              </strong>
-              <span className={pageStyles.summaryMeta}>
-                Waiting for municipal follow-up or assignment.
-              </span>
-            </div>
+              <div className={styles.chartArea}>
+                {hasDistributionData ? (
+                  <ResponsiveContainer height="100%" width="100%">
+                    <PieChart>
+                      <Pie
+                        cornerRadius={10}
+                        data={reportDistribution}
+                        dataKey="value"
+                        innerRadius="56%"
+                        nameKey="name"
+                        outerRadius="84%"
+                        paddingAngle={3}
+                      >
+                        {reportDistribution.map((entry) => (
+                          <Cell fill={entry.color} key={entry.name} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={TOOLTIP_CONTENT_STYLE}
+                        formatter={(value, name) => [value, name]}
+                        labelStyle={{ color: "#1f2937", fontWeight: 700 }}
+                      />
+                      <Legend
+                        align="center"
+                        iconType="circle"
+                        verticalAlign="bottom"
+                        wrapperStyle={{ paddingTop: 20 }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className={styles.emptyChartText}>
+                    No report distribution data is available yet.
+                  </p>
+                )}
+              </div>
+            </Card>
 
-            <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>In progress</span>
-              <strong className={pageStyles.summaryValue}>
-                {inProgressReports.length}
-              </strong>
-              <span className={pageStyles.summaryMeta}>
-                Already being worked by the operations team.
-              </span>
-            </div>
+            <Card className={styles.chartCard} tone="subtle">
+              <div className={pageStyles.sectionHeader}>
+                <div className={pageStyles.sectionCopy}>
+                  <h2 className={pageStyles.sectionTitle}>
+                    Monthly Report Counts
+                  </h2>
+                  <p className={pageStyles.sectionText}>
+                    Report volume grouped by submission month.
+                  </p>
+                </div>
+              </div>
 
-            <div className={pageStyles.summaryCard}>
-              <span className={pageStyles.summaryLabel}>High priority</span>
-              <strong className={pageStyles.summaryValue}>
-                {highPriorityReports.length}
-              </strong>
-              <span className={pageStyles.summaryMeta}>
-                Needs faster attention due to service severity.
-              </span>
-            </div>
+              <div className={styles.chartArea}>
+                <ResponsiveContainer height="100%" width="100%">
+                  <BarChart
+                    data={monthlyReportCounts}
+                    margin={{ top: 8, right: 8, left: -18, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      stroke="rgba(224, 230, 237, 0.92)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      axisLine={false}
+                      dataKey="month"
+                      tick={AXIS_TICK_STYLE}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      tickLine={false}
+                      width={30}
+                    />
+                    <Tooltip
+                      contentStyle={TOOLTIP_CONTENT_STYLE}
+                      cursor={{ fill: "rgba(0, 123, 255, 0.08)" }}
+                      formatter={(value) => [value, "Reports"]}
+                      labelStyle={{ color: "#1f2937", fontWeight: 700 }}
+                    />
+                    <Bar
+                      dataKey="count"
+                      fill="var(--color-primary)"
+                      maxBarSize={34}
+                      radius={[10, 10, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
           </div>
         </div>
       </Card>
@@ -248,9 +414,7 @@ function DashboardPage() {
                 <div className={styles.metricItem}>
                   <span className={styles.metricLabel}>Resolved</span>
                   <strong className={styles.metricValue}>
-                    {reports.length -
-                      pendingReports.length -
-                      inProgressReports.length}
+                    {resolvedReports.length}
                   </strong>
                 </div>
               </div>

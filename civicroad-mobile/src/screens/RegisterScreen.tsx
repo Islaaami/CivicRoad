@@ -90,13 +90,13 @@ function RegisterScreen({ navigation }: Props) {
             <Input
               label="First name"
               onChangeText={(value) => updateField("first_name", value)}
-              placeholder="Amina"
+              placeholder="Ahmed"
               value={formValues.first_name}
             />
             <Input
               label="Last name"
               onChangeText={(value) => updateField("last_name", value)}
-              placeholder="Bennani"
+              placeholder="Alami"
               value={formValues.last_name}
             />
             <Input
@@ -105,7 +105,7 @@ function RegisterScreen({ navigation }: Props) {
               keyboardType="email-address"
               label="Email"
               onChangeText={(value) => updateField("email", value)}
-              placeholder="citizen@city.local"
+              placeholder="citizen@civicroad.ma"
               value={formValues.email}
             />
             <Input

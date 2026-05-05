@@ -103,9 +103,9 @@ function ReportListScreen({ navigation }: Props) {
         ListHeaderComponent={
           <View style={styles.headerStack}>
             <View style={styles.sectionCopy}>
-              <Text style={styles.sectionTitle}>Your reports</Text>
+              <Text style={styles.sectionTitle}>Overview</Text>
               <Text style={styles.sectionText}>
-                Pull down anytime to refresh your current report status.
+                Status of reported issues.
               </Text>
             </View>
 
@@ -139,7 +139,7 @@ function ReportListScreen({ navigation }: Props) {
 
             <View style={styles.sectionHeader}>
               <View style={styles.sectionCopy}>
-                <Text style={styles.recentTitle}>Recent reports</Text>
+                <Text style={styles.recentTitle}>Reports list</Text>
                 <Text style={styles.recentText}>
                   Open any card to view the full report details.
                 </Text>

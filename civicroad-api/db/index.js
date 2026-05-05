@@ -419,24 +419,32 @@ async function seedDemoReports() {
   }
 }
 
-async function backfillReportMunicipalities() {
-  const reports = await db.all(
+async function syncMunicipalityAssignments(tableName) {
+  if (!["reports", "false_reports"].includes(tableName)) {
+    throw new Error(`Unsupported municipality sync table: ${tableName}`);
+  }
+
+  const records = await db.all(
     `
-      SELECT id, latitude, longitude
-      FROM reports
-      WHERE municipality IS NULL OR TRIM(municipality) = ''
+      SELECT id, latitude, longitude, municipality
+      FROM ${tableName}
+      WHERE latitude IS NOT NULL AND longitude IS NOT NULL
     `
   );
 
-  for (const report of reports) {
+  for (const record of records) {
     const municipality = determineMunicipalityFromCoordinates(
-      Number(report.latitude),
-      Number(report.longitude)
+      Number(record.latitude),
+      Number(record.longitude)
     );
 
-    await db.run("UPDATE reports SET municipality = ? WHERE id = ?", [
+    if ((record.municipality || null) === municipality) {
+      continue;
+    }
+
+    await db.run(`UPDATE ${tableName} SET municipality = ? WHERE id = ?`, [
       municipality,
-      report.id,
+      record.id,
     ]);
   }
 }
@@ -532,7 +540,8 @@ async function initDb() {
   await ensureAdminUsers();
   await seedCategories();
   await seedDemoReports();
-  await backfillReportMunicipalities();
+  await syncMunicipalityAssignments("reports");
+  await syncMunicipalityAssignments("false_reports");
   await normalizeReportPriorities();
 
   return db;

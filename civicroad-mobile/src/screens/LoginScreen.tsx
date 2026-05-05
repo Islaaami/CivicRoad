@@ -76,7 +76,7 @@ function LoginScreen({ navigation }: Props) {
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
             <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeText}>Citizen App</Text>
+              <Text style={styles.heroBadgeText}>CivicRoad</Text>
             </View>
             <Text style={styles.title}>Report street issues in a few taps.</Text>
             <Text style={styles.subtitle}>
@@ -92,7 +92,7 @@ function LoginScreen({ navigation }: Props) {
               keyboardType="email-address"
               label="Email"
               onChangeText={handleEmailChange}
-              placeholder="citizen@city.local"
+              placeholder="citizen@civicroad.ma"
               value={email}
             />
 
