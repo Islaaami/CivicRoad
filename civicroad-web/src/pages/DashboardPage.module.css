@@ -1,0 +1,97 @@
+.layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+}
+
+.sideColumn {
+  display: grid;
+  gap: 24px;
+}
+
+.focusList {
+  display: grid;
+  gap: 12px;
+}
+
+.focusItem {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px rgba(224, 230, 237, 0.9);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.focusItem:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 123, 255, 0.12),
+    0 16px 32px rgba(15, 23, 42, 0.07);
+}
+
+.focusCopy {
+  display: grid;
+  gap: 6px;
+}
+
+.focusTitle {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.focusMeta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.focusBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.emptyText {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+.metricList {
+  display: grid;
+  gap: 12px;
+}
+
+.metricItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(224, 230, 237, 0.92);
+}
+
+.metricLabel {
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.metricValue {
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

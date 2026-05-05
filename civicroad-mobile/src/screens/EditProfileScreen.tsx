@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: "#fffaf3",
+    backgroundColor: colors.primarySurface,
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: "#fffaf3",
+    backgroundColor: colors.primarySurface,
     padding: 16,
   },
   sheetIconWrap: {
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f5e8da",
+    backgroundColor: colors.primarySoft,
   },
   sheetCopy: {
     flex: 1,

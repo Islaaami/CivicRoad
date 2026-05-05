@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { getFalseReports } from "../api/reports";
-import { formatDate } from "../components/ReportsTable";
+import PriorityTag from "../components/PriorityTag";
+import Card from "../components/ui/Card";
+import EmptyState from "../components/ui/EmptyState";
+import LoadingPanel from "../components/ui/LoadingPanel";
+import Notice from "../components/ui/Notice";
 import { useAuth } from "../store/AuthContext";
+import pageStyles from "../styles/PageLayout.module.css";
+import { formatDate } from "../utils/reportPresentation";
+import sharedTableStyles from "../components/DataTable.module.css";
+import styles from "./FalseReportsPage.module.css";
 
 function formatLocation(falseReport) {
   if (falseReport.address) {
@@ -57,28 +65,68 @@ function FalseReportsPage() {
   }, []);
 
   return (
-    <div className="page-stack">
-      <section className="page-header">
-        <div className="page-header__copy">
-          <h1 className="page-header__title">False reports</h1>
-          <p className="page-header__text">
-            {`Archived false reports logged for ${municipalityLabel}.`}
-          </p>
-        </div>
-      </section>
+    <div className={pageStyles.stack}>
+      <Card tone="soft">
+        <div className={pageStyles.hero}>
+          <div className={pageStyles.heroHeader}>
+            <div className={pageStyles.heroCopy}>
+              <span className={pageStyles.eyebrow}>Archive Review</span>
+              <h1 className={pageStyles.title}>False reports archive</h1>
+              <p className={pageStyles.description}>
+                {`Review archived false submissions from ${municipalityLabel} so moderation decisions remain visible without cluttering the active queue.`}
+              </p>
+            </div>
+          </div>
 
-      {error ? <div className="error-banner">{error}</div> : null}
+          <div className={pageStyles.summaryGrid}>
+            <div className={pageStyles.summaryCard}>
+              <span className={pageStyles.summaryLabel}>Archived reports</span>
+              <strong className={pageStyles.summaryValue}>
+                {falseReports.length}
+              </strong>
+              <span className={pageStyles.summaryMeta}>
+                Historical false submissions retained for internal review.
+              </span>
+            </div>
+            <div className={pageStyles.summaryCard}>
+              <span className={pageStyles.summaryLabel}>Latest archive</span>
+              <strong className={pageStyles.summaryValue}>
+                {falseReports[0] ? formatDate(falseReports[0].deleted_at) : "--"}
+              </strong>
+              <span className={pageStyles.summaryMeta}>
+                Most recent moderation action currently on record.
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {error ? <Notice>{error}</Notice> : null}
 
       {loading ? (
-        <div className="loading-state">Loading false report archive...</div>
+        <LoadingPanel
+          description="Loading archived reports, moderation timestamps, and historical metadata."
+          rows={5}
+          title="Loading archive"
+        />
       ) : falseReports.length ? (
-        <div className="table-card">
-          <div className="table-scroll">
-            <table className="reports-table">
+        <Card className={sharedTableStyles.card} padding="none">
+          <div className={sharedTableStyles.header}>
+            <div className={sharedTableStyles.headerCopy}>
+              <h2 className={sharedTableStyles.title}>Archived false reports</h2>
+              <p className={sharedTableStyles.description}>
+                False submissions are removed from the live queue but remain visible here for accountability.
+              </p>
+            </div>
+          </div>
+
+          <div className={sharedTableStyles.scroll}>
+            <table className={sharedTableStyles.table}>
               <thead>
                 <tr>
-                  <th>Title</th>
+                  <th>Report</th>
                   <th>Category</th>
+                  <th>Priority</th>
                   <th>Location</th>
                   <th>Reported</th>
                   <th>Archived</th>
@@ -86,25 +134,53 @@ function FalseReportsPage() {
               </thead>
               <tbody>
                 {falseReports.map((falseReport) => (
-                  <tr key={falseReport.id}>
+                  <tr className={sharedTableStyles.row} key={falseReport.id}>
                     <td>
-                      <p className="table-title">{falseReport.title || "Untitled report"}</p>
-                      <p className="table-meta">{falseReport.description || "No description"}</p>
+                      <div className={styles.reportCell}>
+                        <div className={styles.copy}>
+                          <p className={styles.title}>
+                            {falseReport.title || "Untitled report"}
+                          </p>
+                          <p className={styles.description}>
+                            {falseReport.description || "No description provided."}
+                          </p>
+                        </div>
+                      </div>
                     </td>
-                    <td>{falseReport.category_name || "Uncategorized"}</td>
-                    <td>{formatLocation(falseReport)}</td>
-                    <td>{formatDate(falseReport.created_at)}</td>
-                    <td>{formatDate(falseReport.deleted_at)}</td>
+                    <td className={sharedTableStyles.secondaryText}>
+                      {falseReport.category_name || "Uncategorized"}
+                    </td>
+                    <td>
+                      <PriorityTag
+                        priority={falseReport.priority}
+                        size="sm"
+                      />
+                    </td>
+                    <td className={sharedTableStyles.secondaryText}>
+                      <span className={styles.location}>
+                        {formatLocation(falseReport)}
+                      </span>
+                    </td>
+                    <td className={sharedTableStyles.secondaryText}>
+                      {formatDate(falseReport.created_at)}
+                    </td>
+                    <td className={sharedTableStyles.secondaryText}>
+                      {formatDate(falseReport.deleted_at)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       ) : (
-        <div className="empty-state">
-          No false reports have been archived for this municipality yet.
-        </div>
+        <Card>
+          <EmptyState
+            description="No reports have been archived as false submissions for this municipality yet."
+            icon="archive"
+            title="Archive is empty"
+          />
+        </Card>
       )}
     </div>
   );

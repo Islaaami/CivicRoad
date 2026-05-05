@@ -14,34 +14,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import apiClient, { getAssetUrl } from "../api/client";
 import Button from "../components/Button";
 import Input from "../components/Input";
+import StatusBadge from "../components/StatusBadge";
 import { useAuth } from "../context/AuthContext";
 import { AppStackParamList } from "../navigation/AppNavigator";
-import { formatDate, formatStatus } from "../utils/format";
+import { formatDate } from "../utils/format";
 import { Report } from "../utils/types";
 import { colors, shadows } from "../utils/theme";
 
 type Props = NativeStackScreenProps<AppStackParamList, "ReportDetail">;
-
-function getStatusStyle(status: Report["status"]) {
-  if (status === "in_progress") {
-    return {
-      backgroundColor: "#dbeafe",
-      color: colors.inProgress,
-    };
-  }
-
-  if (status === "resolved") {
-    return {
-      backgroundColor: "#dcfce7",
-      color: colors.resolved,
-    };
-  }
-
-  return {
-    backgroundColor: "#fef3c7",
-    color: colors.pending,
-  };
-}
 
 function ReportDetailScreen({ navigation, route }: Props) {
   const { user } = useAuth();
@@ -191,7 +171,6 @@ function ReportDetailScreen({ navigation, route }: Props) {
   }
 
   const imageUrl = getAssetUrl(report.image_url);
-  const statusStyle = getStatusStyle(report.status);
   const canManageReport = report.citizen_id === user?.id;
   const isReportLocked = report.status === "in_progress" || report.status === "resolved";
   const canEditPendingReport = canManageReport && !isReportLocked;
@@ -200,11 +179,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
     <SafeAreaView edges={["bottom"]} style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.heroCard}>
-          <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
-            <Text style={[styles.badgeText, { color: statusStyle.color }]}>
-              {formatStatus(report.status)}
-            </Text>
-          </View>
+          <StatusBadge status={report.status} />
 
           {editing ? (
             <>
@@ -257,7 +232,7 @@ function ReportDetailScreen({ navigation, route }: Props) {
                     disabled={!canEditPendingReport || deleting}
                     onPress={handleDeletePress}
                     title={deleting ? "Deleting..." : "Delete Report"}
-                    variant="secondary"
+                    variant="danger"
                   />
                 </>
               )}
@@ -338,18 +313,6 @@ const styles = StyleSheet.create({
     padding: 20,
     ...shadows.card,
   },
-  badge: {
-    alignSelf: "flex-start",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-    textTransform: "uppercase",
-  },
   title: {
     color: colors.text,
     fontSize: 28,
@@ -398,7 +361,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: "#fffaf3",
+    backgroundColor: colors.primarySurface,
     padding: 16,
     gap: 6,
   },

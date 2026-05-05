@@ -1,100 +1,112 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { formatDate, formatStatus } from "../utils/format";
+import { getAssetUrl } from "../api/client";
+import { formatDate } from "../utils/format";
+import { colors, radii, shadows, spacing, typography } from "../utils/theme";
 import { Report } from "../utils/types";
-import { colors, shadows } from "../utils/theme";
+import StatusBadge from "./StatusBadge";
 
 type ReportCardProps = {
   report: Report;
   onPress: () => void;
 };
 
-function getStatusStyle(status: Report["status"]) {
-  if (status === "in_progress") {
-    return {
-      backgroundColor: "#dbeafe",
-      color: colors.inProgress,
-    };
-  }
-
-  if (status === "resolved") {
-    return {
-      backgroundColor: "#dcfce7",
-      color: colors.resolved,
-    };
-  }
-
-  return {
-    backgroundColor: "#fef3c7",
-    color: colors.pending,
-  };
-}
-
 function ReportCard({ report, onPress }: ReportCardProps) {
-  const statusStyle = getStatusStyle(report.status);
+  const imageUrl = getAssetUrl(report.image_url);
 
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}>
-      <View style={styles.cardTop}>
-        <Text numberOfLines={2} style={styles.title}>
-          {report.title}
-        </Text>
-        <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
-          <Text style={[styles.badgeText, { color: statusStyle.color }]}>
-            {formatStatus(report.status)}
-          </Text>
-        </View>
-      </View>
+      <View style={styles.content}>
+        <View style={styles.copy}>
+          <View style={styles.headerRow}>
+            <Text numberOfLines={2} style={styles.title}>
+              {report.title}
+            </Text>
+            <StatusBadge status={report.status} />
+          </View>
 
-      <Text numberOfLines={2} style={styles.meta}>
-        {report.category_name || "Uncategorized"}
-      </Text>
-      <Text style={styles.date}>{formatDate(report.created_at)}</Text>
+          <View style={styles.metaRow}>
+            <View style={styles.categoryChip}>
+              <Text numberOfLines={1} style={styles.categoryText}>
+                {report.category_name || "Uncategorized"}
+              </Text>
+            </View>
+            <Text style={styles.date}>{formatDate(report.created_at)}</Text>
+          </View>
+        </View>
+
+        {imageUrl ? (
+          <Image contentFit="cover" source={{ uri: imageUrl }} style={styles.image} />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Ionicons color={colors.primary} name="image-outline" size={22} />
+          </View>
+        )}
+      </View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    gap: 12,
-    borderRadius: 24,
-    padding: 18,
-    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
     ...shadows.card,
   },
   cardPressed: {
-    transform: [{ scale: 0.99 }],
+    transform: [{ scale: 0.987 }],
+    opacity: 0.98,
   },
-  cardTop: {
-    gap: 10,
+  content: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  copy: {
+    flex: 1,
+    gap: spacing.sm,
+  },
+  headerRow: {
+    gap: spacing.xs,
   },
   title: {
-    color: colors.text,
-    fontSize: 17,
-    fontWeight: "800",
-    lineHeight: 23,
+    ...typography.title2,
+    paddingRight: spacing.sm,
   },
-  badge: {
+  metaRow: {
+    gap: spacing.sm,
+  },
+  categoryChip: {
     alignSelf: "flex-start",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderRadius: radii.full,
+    backgroundColor: colors.primarySoft,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 7,
   },
-  badgeText: {
+  categoryText: {
+    color: colors.primaryDark,
     fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.3,
-    textTransform: "uppercase",
-  },
-  meta: {
-    color: colors.textMuted,
-    fontSize: 14,
+    fontWeight: "700",
   },
   date: {
-    color: colors.textMuted,
-    fontSize: 13,
-    fontWeight: "600",
+    ...typography.caption,
+  },
+  image: {
+    width: 88,
+    height: 88,
+    borderRadius: radii.md,
+    backgroundColor: colors.backgroundAlt,
+  },
+  imagePlaceholder: {
+    width: 88,
+    height: 88,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: radii.md,
+    backgroundColor: colors.primarySoft,
   },
 });
 

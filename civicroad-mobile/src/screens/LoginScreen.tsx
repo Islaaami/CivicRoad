@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   heroBadge: {
     alignSelf: "flex-start",
     borderRadius: 999,
-    backgroundColor: "#f5e8da",
+    backgroundColor: colors.primarySoft,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   infoCard: {
     flex: 1,
     borderRadius: 22,
-    backgroundColor: "#fffaf3",
+    backgroundColor: colors.primarySurface,
     borderWidth: 1,
     borderColor: colors.border,
     padding: 16,

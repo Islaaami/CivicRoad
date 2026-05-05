@@ -78,6 +78,7 @@ async function getFalseReports(request, response, next) {
           false_reports.category_id,
           categories.name AS category_name,
           false_reports.municipality,
+          false_reports.priority,
           false_reports.created_at,
           false_reports.deleted_at
         FROM false_reports
@@ -108,6 +109,7 @@ async function markReportAsFalse(request, response, next) {
           reports.longitude,
           reports.municipality,
           reports.category_id,
+          reports.priority,
           reports.created_at,
           (
             SELECT url
@@ -147,10 +149,11 @@ async function markReportAsFalse(request, response, next) {
           address,
           category_id,
           municipality,
+          priority,
           created_at,
           deleted_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `,
       [
         report.title,
@@ -161,6 +164,7 @@ async function markReportAsFalse(request, response, next) {
         archivedAddress,
         report.category_id,
         report.municipality,
+        report.priority || null,
         report.created_at,
       ]
     );

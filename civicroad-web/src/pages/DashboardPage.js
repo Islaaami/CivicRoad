@@ -1,9 +1,27 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getReports } from "../api/reports";
+import PriorityTag from "../components/PriorityTag";
 import ReportsTable from "../components/ReportsTable";
 import StatusBadge from "../components/StatusBadge";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import LoadingPanel from "../components/ui/LoadingPanel";
+import Notice from "../components/ui/Notice";
 import { useAuth } from "../store/AuthContext";
+import pageStyles from "../styles/PageLayout.module.css";
+import {
+  formatDate,
+  getReportPriority,
+} from "../utils/reportPresentation";
+import styles from "./DashboardPage.module.css";
+
+const PRIORITY_ORDER = {
+  high: 0,
+  medium: 1,
+  low: 2,
+  none: 3,
+};
 
 function DashboardPage() {
   const { user } = useAuth();
@@ -18,6 +36,7 @@ function DashboardPage() {
     async function loadReports() {
       try {
         const data = await getReports();
+
         if (active) {
           setReports(data);
         }
@@ -46,93 +65,198 @@ function DashboardPage() {
   const inProgressReports = reports.filter(
     (report) => report.status === "in_progress"
   );
-  const resolvedReports = reports.filter(
-    (report) => report.status === "resolved"
+  const highPriorityReports = reports.filter(
+    (report) => getReportPriority(report) === "high"
   );
-
   const latestReports = reports.slice(0, 5);
+  const focusReports = reports
+    .filter(
+      (report) =>
+        report.status === "pending" || report.status === "in_progress"
+    )
+    .slice()
+    .sort((leftReport, rightReport) => {
+      const leftPriority = getReportPriority(leftReport) || "none";
+      const rightPriority = getReportPriority(rightReport) || "none";
+      const priorityDifference =
+        PRIORITY_ORDER[leftPriority] - PRIORITY_ORDER[rightPriority];
+
+      if (priorityDifference !== 0) {
+        return priorityDifference;
+      }
+
+      return new Date(rightReport.created_at) - new Date(leftReport.created_at);
+    })
+    .slice(0, 5);
 
   return (
-    <div className="page-stack">
-      <section className="dashboard-grid">
-        <article className="stat-card">
-          <p className="stat-card__label">Total reports</p>
-          <p className="stat-card__value">{reports.length}</p>
-          <p className="stat-card__hint">{`Live issue queue for ${municipalityLabel}.`}</p>
-        </article>
+    <div className={pageStyles.stack}>
+      <Card tone="soft">
+        <div className={pageStyles.hero}>
+          <div className={pageStyles.heroHeader}>
+            <div className={pageStyles.heroCopy}>
+              <span className={pageStyles.eyebrow}>Operations Snapshot</span>
+              <h1 className={pageStyles.title}>Keep the city queue moving.</h1>
+              <p className={pageStyles.description}>
+                {`Monitor the active service queue for ${municipalityLabel}, spot urgent cases early, and jump into the latest reports without losing context.`}
+              </p>
+            </div>
 
-        <article className="stat-card">
-          <p className="stat-card__label">Pending</p>
-          <p className="stat-card__value">{pendingReports.length}</p>
-          <p className="stat-card__hint">Waiting for municipal action to begin.</p>
-        </article>
+            <div className={pageStyles.actions}>
+              <Button as={Link} to="/reports" variant="primary">
+                Open reports
+              </Button>
+              <Button as={Link} to="/map" variant="secondary">
+                View map
+              </Button>
+            </div>
+          </div>
 
-        <article className="stat-card">
-          <p className="stat-card__label">In progress</p>
-          <p className="stat-card__value">{inProgressReports.length}</p>
-          <p className="stat-card__hint">Teams already moving on site or in triage.</p>
-        </article>
+          <div className={pageStyles.summaryGrid}>
+            <div className={pageStyles.summaryCard}>
+              <span className={pageStyles.summaryLabel}>Total reports</span>
+              <strong className={pageStyles.summaryValue}>{reports.length}</strong>
+              <span className={pageStyles.summaryMeta}>
+                Live queue currently assigned to your municipality.
+              </span>
+            </div>
 
-        <article className="stat-card">
-          <p className="stat-card__label">Resolved</p>
-          <p className="stat-card__value">{resolvedReports.length}</p>
-          <p className="stat-card__hint">Completed issues that can be referenced later.</p>
-        </article>
-      </section>
+            <div className={pageStyles.summaryCard}>
+              <span className={pageStyles.summaryLabel}>Pending</span>
+              <strong className={pageStyles.summaryValue}>
+                {pendingReports.length}
+              </strong>
+              <span className={pageStyles.summaryMeta}>
+                Waiting for municipal follow-up or assignment.
+              </span>
+            </div>
 
-      {error ? <div className="error-banner">{error}</div> : null}
-      {loading ? <div className="loading-state">Loading dashboard data...</div> : null}
+            <div className={pageStyles.summaryCard}>
+              <span className={pageStyles.summaryLabel}>In progress</span>
+              <strong className={pageStyles.summaryValue}>
+                {inProgressReports.length}
+              </strong>
+              <span className={pageStyles.summaryMeta}>
+                Already being worked by the operations team.
+              </span>
+            </div>
+
+            <div className={pageStyles.summaryCard}>
+              <span className={pageStyles.summaryLabel}>High priority</span>
+              <strong className={pageStyles.summaryValue}>
+                {highPriorityReports.length}
+              </strong>
+              <span className={pageStyles.summaryMeta}>
+                Needs faster attention due to service severity.
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {error ? <Notice>{error}</Notice> : null}
+
+      {loading ? (
+        <LoadingPanel
+          description="Preparing the latest queue summary, focus list, and recent report activity."
+          rows={5}
+          title="Loading dashboard"
+        />
+      ) : null}
 
       {!loading && !error ? (
-        <section className="dashboard-columns">
-          <div className="section-card">
-            <div className="section-heading">
-              <div>
-                <h3 className="section-title">Recent reports</h3>
-                <p className="section-copy">
-                  {`Latest issues submitted inside ${municipalityLabel}.`}
-                </p>
-              </div>
+        <div className={styles.layout}>
+          <ReportsTable
+            action={
+              <Button as={Link} to="/reports" variant="secondary">
+                Full list
+              </Button>
+            }
+            description={`Newest submissions routed to ${municipalityLabel}.`}
+            reports={latestReports}
+            title="Recent reports"
+          />
 
-              <Link className="button" to="/reports">
-                Open full list
-              </Link>
-            </div>
-
-            <ReportsTable reports={latestReports} />
-          </div>
-
-          <div className="section-card">
-            <div className="section-heading">
-              <div>
-                <h3 className="section-title">Priority focus</h3>
-                <p className="section-copy">
-                  Items that need immediate staff awareness.
-                </p>
-              </div>
-            </div>
-
-            <div className="focus-list">
-              {pendingReports.length ? (
-                pendingReports.slice(0, 4).map((report) => (
-                  <Link className="focus-item" key={report.id} to={`/reports/${report.id}`}>
-                    <div className="focus-item__copy">
-                      <p className="focus-item__title">{report.title}</p>
-                      <p className="focus-item__meta">
-                        {report.category_name || "Uncategorized"}
-                      </p>
-                    </div>
-                    <StatusBadge status={report.status} />
-                  </Link>
-                ))
-              ) : (
-                <div className="empty-state">
-                  No pending reports right now. The queue is fully under control.
+          <div className={styles.sideColumn}>
+            <Card>
+              <div className={pageStyles.sectionHeader}>
+                <div className={pageStyles.sectionCopy}>
+                  <h2 className={pageStyles.sectionTitle}>Priority focus</h2>
+                  <p className={pageStyles.sectionText}>
+                    Quick access to the reports that deserve the most immediate
+                    staff awareness.
+                  </p>
                 </div>
-              )}
-            </div>
+              </div>
+
+              <div className={styles.focusList}>
+                {focusReports.length ? (
+                  focusReports.map((report) => (
+                    <Link
+                      className={styles.focusItem}
+                      key={report.id}
+                      to={`/reports/${report.id}`}
+                    >
+                      <div className={styles.focusCopy}>
+                        <p className={styles.focusTitle}>{report.title}</p>
+                        <p className={styles.focusMeta}>
+                          {`${report.category_name || "Uncategorized"} - ${formatDate(
+                            report.created_at
+                          )}`}
+                        </p>
+                      </div>
+                      <div className={styles.focusBadges}>
+                        <PriorityTag
+                          priority={getReportPriority(report)}
+                          size="sm"
+                        />
+                        <StatusBadge size="sm" status={report.status} />
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <p className={styles.emptyText}>
+                    No reports need immediate attention right now.
+                  </p>
+                )}
+              </div>
+            </Card>
+
+            <Card tone="subtle">
+              <div className={pageStyles.sectionHeader}>
+                <div className={pageStyles.sectionCopy}>
+                  <h2 className={pageStyles.sectionTitle}>Workflow balance</h2>
+                  <p className={pageStyles.sectionText}>
+                    A quick distribution of active work across the queue.
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.metricList}>
+                <div className={styles.metricItem}>
+                  <span className={styles.metricLabel}>Pending</span>
+                  <strong className={styles.metricValue}>
+                    {pendingReports.length}
+                  </strong>
+                </div>
+                <div className={styles.metricItem}>
+                  <span className={styles.metricLabel}>In progress</span>
+                  <strong className={styles.metricValue}>
+                    {inProgressReports.length}
+                  </strong>
+                </div>
+                <div className={styles.metricItem}>
+                  <span className={styles.metricLabel}>Resolved</span>
+                  <strong className={styles.metricValue}>
+                    {reports.length -
+                      pendingReports.length -
+                      inProgressReports.length}
+                  </strong>
+                </div>
+              </div>
+            </Card>
           </div>
-        </section>
+        </div>
       ) : null}
     </div>
   );

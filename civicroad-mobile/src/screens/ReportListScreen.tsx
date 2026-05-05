@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -12,12 +12,14 @@ import { CompositeScreenProps, useIsFocused } from "@react-navigation/native";
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import apiClient from "../api/client";
+import Button from "../components/Button";
+import EmptyState from "../components/EmptyState";
 import ReportCard from "../components/ReportCard";
 import { useAuth } from "../context/AuthContext";
 import { AppStackParamList } from "../navigation/AppNavigator";
 import { AppTabParamList } from "../navigation/MainTabNavigator";
+import { colors, layout, radii, spacing, typography } from "../utils/theme";
 import { Report } from "../utils/types";
-import { colors } from "../utils/theme";
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<AppTabParamList, "Reports">,
@@ -27,77 +29,55 @@ type Props = CompositeScreenProps<
 function ReportListScreen({ navigation }: Props) {
   const { user } = useAuth();
   const isFocused = useIsFocused();
-
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const loadReports = useCallback(
+    async (showRefresh = false) => {
+      try {
+        if (showRefresh) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+
+        const response = await apiClient.get<Report[]>("/reports");
+        const ownReports = response.data.filter((report) => report.citizen_id === user?.id);
+        setReports(ownReports);
+      } catch (error: any) {
+        Alert.alert(
+          "Unable to load reports",
+          error.response?.data?.message || "Please make sure the local API is running."
+        );
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [user?.id]
+  );
 
   useEffect(() => {
     if (!isFocused) {
       return;
     }
 
-    let active = true;
+    void loadReports();
+  }, [isFocused, loadReports]);
 
-    async function syncReports() {
-      try {
-        setLoading(true);
-        const response = await apiClient.get<Report[]>("/reports");
-
-        if (!active) {
-          return;
-        }
-
-        const ownReports = response.data.filter((report) => report.citizen_id === user?.id);
-        setReports(ownReports);
-      } catch (error: any) {
-        if (active) {
-          Alert.alert(
-            "Unable to load reports",
-            error.response?.data?.message || "Please make sure the local API is running."
-          );
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    syncReports();
-
-    return () => {
-      active = false;
-    };
-  }, [isFocused, user?.id]);
-
-  async function loadReports(showRefresh = false) {
-    try {
-      if (showRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      const response = await apiClient.get<Report[]>("/reports");
-      const ownReports = response.data.filter((report) => report.citizen_id === user?.id);
-      setReports(ownReports);
-    } catch (error: any) {
-      Alert.alert(
-        "Unable to load reports",
-        error.response?.data?.message || "Please make sure the local API is running."
-      );
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }
+  const pendingCount = reports.filter((report) => report.status === "pending").length;
+  const inProgressCount = reports.filter((report) => report.status === "in_progress").length;
+  const resolvedCount = reports.filter((report) => report.status === "resolved").length;
 
   if (loading) {
     return (
       <View style={styles.centerState}>
         <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={styles.stateText}>Loading your reports...</Text>
+        <Text style={styles.stateTitle}>Loading reports</Text>
+        <Text style={styles.stateText}>
+          We&apos;re pulling your latest submitted issues and status updates.
+        </Text>
       </View>
     );
   }
@@ -109,15 +89,67 @@ function ReportListScreen({ navigation }: Props) {
         data={reports}
         keyExtractor={(item) => String(item.id)}
         ListEmptyComponent={
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No reports yet</Text>
-            <Text style={styles.emptyText}>
-              Create your first report to send a photo and pin the issue on the map.
-            </Text>
+          <EmptyState
+            action={
+              <Button
+                onPress={() => navigation.navigate("Create")}
+                title="Create a report"
+              />
+            }
+            description="Start with a photo, add the location, and send the issue directly to your municipality."
+            title="No reports yet"
+          />
+        }
+        ListHeaderComponent={
+          <View style={styles.headerStack}>
+            <View style={styles.sectionCopy}>
+              <Text style={styles.sectionTitle}>Your reports</Text>
+              <Text style={styles.sectionText}>
+                Pull down anytime to refresh your current report status.
+              </Text>
+            </View>
+
+            <View style={styles.totalCard}>
+              <Text style={styles.totalLabel}>Total reports</Text>
+              <Text style={styles.totalValue}>{reports.length}</Text>
+            </View>
+
+            <View style={styles.statusRow}>
+              <View style={styles.statusCard}>
+                <View style={styles.statusHeader}>
+                  <Text style={[styles.statusLabel, { color: colors.pending }]}>Pending</Text>
+                </View>
+                <Text style={styles.statusValue}>{pendingCount}</Text>
+              </View>
+
+              <View style={styles.statusCard}>
+                <View style={styles.statusHeader}>
+                  <Text style={[styles.statusLabel, { color: colors.inProgress }]}>InProgress</Text>
+                </View>
+                <Text style={styles.statusValue}>{inProgressCount}</Text>
+              </View>
+
+              <View style={styles.statusCard}>
+                <View style={styles.statusHeader}>
+                  <Text style={[styles.statusLabel, { color: colors.resolved }]}>Resolved</Text>
+                </View>
+                <Text style={styles.statusValue}>{resolvedCount}</Text>
+              </View>
+            </View>
+
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionCopy}>
+                <Text style={styles.recentTitle}>Recent reports</Text>
+                <Text style={styles.recentText}>
+                  Open any card to view the full report details.
+                </Text>
+              </View>
+            </View>
           </View>
         }
         refreshControl={
           <RefreshControl
+            colors={[colors.primary]}
             onRefresh={() => loadReports(true)}
             refreshing={refreshing}
             tintColor={colors.primary}
@@ -141,42 +173,101 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   listContent: {
-    padding: 18,
-    gap: 14,
+    padding: layout.screenPadding,
+    gap: spacing.md,
     flexGrow: 1,
+    paddingBottom: spacing.xxl,
+  },
+  headerStack: {
+    gap: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  totalCard: {
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+    gap: spacing.xxs,
+  },
+  totalLabel: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  totalValue: {
+    color: colors.text,
+    fontSize: 32,
+    fontWeight: "900",
+    letterSpacing: -0.6,
+  },
+  statusRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  statusCard: {
+    flex: 1,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  statusHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: radii.full,
+  },
+  statusLabel: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  statusValue: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+  },
+  sectionHeader: {
+    marginTop: spacing.xs,
+  },
+  sectionCopy: {
+    gap: spacing.xxs,
+  },
+  sectionTitle: {
+    ...typography.title2,
+  },
+  sectionText: {
+    ...typography.body,
+  },
+  recentTitle: {
+    ...typography.title1,
+  },
+  recentText: {
+    ...typography.body,
   },
   centerState: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
+    gap: spacing.xs,
     backgroundColor: colors.background,
-    padding: 24,
+    padding: spacing.xl,
+  },
+  stateTitle: {
+    ...typography.title2,
   },
   stateText: {
-    color: colors.textMuted,
-    fontSize: 15,
-  },
-  emptyCard: {
-    marginTop: 40,
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    padding: 22,
-    alignItems: "center",
-    gap: 10,
-  },
-  emptyTitle: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  emptyText: {
-    color: colors.textMuted,
-    fontSize: 15,
-    lineHeight: 22,
+    ...typography.body,
     textAlign: "center",
+    maxWidth: 280,
   },
 });
 

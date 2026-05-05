@@ -1,0 +1,353 @@
+.shell {
+  display: grid;
+  grid-template-columns: 292px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  border: 0;
+  background: rgba(15, 23, 42, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.overlayVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  min-height: 100vh;
+  border-right: 1px solid rgba(224, 230, 237, 0.7);
+  background:
+    radial-gradient(circle at top, rgba(36, 141, 255, 0.22), transparent 38%),
+    linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  color: #f8fafc;
+}
+
+.sidebarInner {
+  display: grid;
+  align-content: space-between;
+  gap: 28px;
+  width: 100%;
+  padding: 24px;
+}
+
+.brandBlock {
+  display: grid;
+  gap: 18px;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #38bdf8, #007bff);
+  color: #ffffff;
+  box-shadow: 0 18px 34px rgba(0, 123, 255, 0.3);
+}
+
+.brandCopy {
+  display: grid;
+  gap: 10px;
+}
+
+.brandBadge {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.brandTitle {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: -0.04em;
+}
+
+.brandText {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  line-height: 1.72;
+}
+
+.navList {
+  display: grid;
+  gap: 10px;
+}
+
+.navLink {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  color: rgba(248, 250, 252, 0.82);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.navLink:hover {
+  transform: translateX(3px);
+  border-color: rgba(96, 165, 250, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.navLinkActive {
+  border-color: rgba(56, 189, 248, 0.34);
+  background:
+    linear-gradient(135deg, rgba(56, 189, 248, 0.16), rgba(0, 123, 255, 0.18));
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.navIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navLinkActive .navIcon {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.navCopy {
+  display: grid;
+  gap: 4px;
+}
+
+.navTitle {
+  font-size: 0.97rem;
+  font-weight: 700;
+}
+
+.navDescription {
+  color: rgba(226, 232, 240, 0.72);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.sidebarCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 22px;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.sidebarLabel {
+  color: rgba(148, 163, 184, 0.88);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sidebarValue {
+  font-size: 1.05rem;
+}
+
+.sidebarText {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.74);
+  line-height: 1.65;
+}
+
+.mainFrame {
+  min-width: 0;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 32px 20px;
+  border-bottom: 1px solid rgba(224, 230, 237, 0.8);
+  background: rgba(248, 251, 255, 0.82);
+  backdrop-filter: blur(14px);
+}
+
+.topbarPrimary {
+  display: flex;
+  gap: 16px;
+  min-width: 0;
+}
+
+.menuButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.pageCopy {
+  display: grid;
+  gap: 8px;
+}
+
+.pageEyebrow {
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  letter-spacing: -0.05em;
+  line-height: 1.02;
+}
+
+.pageDescription {
+  max-width: 760px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.72;
+}
+
+.userPanel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.userCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(224, 230, 237, 0.92);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  color: var(--color-primary-hover);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.userCopy {
+  display: grid;
+  gap: 2px;
+}
+
+.userName {
+  font-weight: 700;
+}
+
+.userMeta {
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+}
+
+.contentArea {
+  padding: 32px;
+}
+
+.contentInner {
+  width: min(100%, 1360px);
+  margin: 0 auto;
+}
+
+@media (max-width: 1180px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(320px, 100vw);
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .menuButton {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    flex-direction: column;
+    padding: 20px 20px 18px;
+  }
+
+  .userPanel {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .contentArea {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .userCard {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .userCopy {
+    min-width: 0;
+  }
+
+  .userMeta,
+  .pageDescription {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

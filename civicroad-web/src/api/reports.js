@@ -28,6 +28,14 @@ export async function updateReportStatus(reportId, status) {
   return response.data;
 }
 
+export async function updateReportPriority(reportId, priority) {
+  const response = await apiClient.patch(`/reports/${reportId}/priority`, {
+    priority,
+  });
+
+  return response.data;
+}
+
 export async function markReportAsFalse(reportId) {
   const response = await apiClient.post(`/reports/${reportId}/false`);
   return response.data;

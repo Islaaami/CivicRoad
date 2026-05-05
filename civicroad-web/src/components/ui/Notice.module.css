@@ -1,0 +1,24 @@
+.notice {
+  border: 1px solid transparent;
+  border-radius: 18px;
+  padding: 14px 16px;
+  line-height: 1.6;
+}
+
+.toneError {
+  border-color: rgba(239, 68, 68, 0.16);
+  background: rgba(254, 242, 242, 0.92);
+  color: #b42318;
+}
+
+.toneInfo {
+  border-color: rgba(0, 123, 255, 0.16);
+  background: rgba(239, 246, 255, 0.92);
+  color: #1d4ed8;
+}
+
+.toneSuccess {
+  border-color: rgba(16, 185, 129, 0.16);
+  background: rgba(236, 253, 245, 0.92);
+  color: #047857;
+}

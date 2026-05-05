@@ -1,17 +1,24 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import { Link } from "react-router-dom";
-import StatusBadge from "./StatusBadge";
+import { classNames } from "../utils/classNames";
+import { getReportPriority } from "../utils/reportPresentation";
+import PriorityTag from "./PriorityTag";
+import StatusBadge, { formatStatusLabel } from "./StatusBadge";
+import Card from "./ui/Card";
+import EmptyState from "./ui/EmptyState";
+import sharedPageStyles from "../styles/PageLayout.module.css";
+import styles from "./ReportMap.module.css";
 
 const DEFAULT_CENTER = [33.5731, -7.5898];
 const STATUS_COLORS = {
-  pending: "#f59e0b",
-  in_progress: "#2563eb",
+  pending: "#f97316",
+  in_progress: "#7c3aed",
   resolved: "#10b981",
 };
 
 function escapeHtml(value) {
-  return String(value)
+  return String(value || "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -21,20 +28,35 @@ function escapeHtml(value) {
 
 function buildPopupMarkup(report) {
   return `
-    <div style="min-width: 180px;">
-      <strong>${escapeHtml(report.title)}</strong>
-      <div style="margin-top: 6px;">${escapeHtml(
+    <div class="civicroad-map-popup">
+      <strong class="civicroad-map-popup__title">${escapeHtml(report.title)}</strong>
+      <span class="civicroad-map-popup__meta">${escapeHtml(
         report.category_name || "Uncategorized"
-      )}</div>
-      <div style="margin-top: 6px; color: #475569;">${report.status.replace("_", " ")}</div>
+      )}</span>
+      <span class="civicroad-map-popup__status civicroad-map-popup__status--${escapeHtml(
+        report.status || "unknown"
+      )}">${escapeHtml(
+        formatStatusLabel(report.status)
+      )}</span>
     </div>
   `;
 }
 
-function ReportMap({ reports, compact = false }) {
+function ReportMap({
+  compact = false,
+  reports,
+  showList = !compact,
+  title = "Mapped reports",
+  description = "Live markers for reports that include valid coordinates.",
+}) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const layerRef = useRef(null);
+  const validReports = reports.filter(
+    (report) =>
+      Number.isFinite(Number(report.latitude)) &&
+      Number.isFinite(Number(report.longitude))
+  );
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) {
@@ -70,13 +92,6 @@ function ReportMap({ reports, compact = false }) {
 
     layerRef.current.clearLayers();
 
-    const validReports = reports.filter((report) => {
-      return (
-        Number.isFinite(Number(report.latitude)) &&
-        Number.isFinite(Number(report.longitude))
-      );
-    });
-
     if (!validReports.length) {
       mapRef.current.setView(DEFAULT_CENTER, 12);
       return;
@@ -90,7 +105,7 @@ function ReportMap({ reports, compact = false }) {
         radius: compact ? 8 : 10,
         color: "#ffffff",
         weight: 3,
-        fillColor: STATUS_COLORS[report.status] || "#475569",
+        fillColor: STATUS_COLORS[report.status] || "#64748b",
         fillOpacity: 0.95,
       });
 
@@ -110,44 +125,56 @@ function ReportMap({ reports, compact = false }) {
     window.requestAnimationFrame(() => {
       mapRef.current?.invalidateSize();
     });
-  }, [compact, reports]);
+  }, [compact, validReports]);
 
   return (
-    <div className="map-layout">
-      <div className={`map-card ${compact ? "map-panel--compact" : "map-panel"}`}>
-        <div className="map-canvas" ref={containerRef} />
-      </div>
+    <div className={classNames(styles.layout, compact && styles.layoutCompact)}>
+      <Card
+        className={classNames(styles.mapCard, compact && styles.mapCardCompact)}
+        padding="none"
+      >
+        <div className={styles.canvas} ref={containerRef} />
+      </Card>
 
-      <div className="section-card">
-        <div className="section-heading">
-          <div>
-            <h3 className="section-title">Mapped reports</h3>
-            <p className="section-copy">
-              Live markers for all issues with valid coordinates.
-            </p>
-          </div>
-        </div>
-
-        <div className="quick-list">
-          {reports.length ? (
-            reports.map((report) => (
-              <Link className="quick-item" key={report.id} to={`/reports/${report.id}`}>
-                <div className="quick-item__copy">
-                  <p className="quick-item__title">{report.title}</p>
-                  <p className="quick-item__meta">
-                    {report.category_name || "Uncategorized"}
-                  </p>
-                </div>
-                <StatusBadge status={report.status} />
-              </Link>
-            ))
-          ) : (
-            <div className="empty-state">
-              No reports with coordinates are available to display on the map.
+      {showList ? (
+        <Card className={styles.listCard}>
+          <div className={sharedPageStyles.sectionHeader}>
+            <div className={sharedPageStyles.sectionCopy}>
+              <h3 className={sharedPageStyles.sectionTitle}>{title}</h3>
+              <p className={sharedPageStyles.sectionText}>{description}</p>
             </div>
+          </div>
+
+          {validReports.length ? (
+            <div className={styles.reportList}>
+              {validReports.map((report) => (
+                <Link className={styles.reportItem} key={report.id} to={`/reports/${report.id}`}>
+                  <div className={styles.reportCopy}>
+                    <p className={styles.reportTitle}>{report.title}</p>
+                    <p className={styles.reportMeta}>
+                      {report.category_name || "Uncategorized"}
+                    </p>
+                  </div>
+                  <div className={styles.reportBadges}>
+                    <PriorityTag
+                      priority={getReportPriority(report)}
+                      size="sm"
+                    />
+                    <StatusBadge size="sm" status={report.status} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              compact
+              description="Reports without valid coordinates cannot be placed on the city map."
+              icon="map"
+              title="No mapped reports available"
+            />
           )}
-        </div>
-      </div>
+        </Card>
+      ) : null}
     </div>
   );
 }

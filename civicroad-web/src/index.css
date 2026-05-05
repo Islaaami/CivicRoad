@@ -1,38 +1,44 @@
 :root {
   color-scheme: light;
-  --color-ink: #1e293b;
-  --color-muted: #5b6478;
-  --color-accent: #c96a23;
-  --color-accent-dark: #8b4719;
-  --color-line: rgba(30, 41, 59, 0.12);
-  --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.12);
+  --color-primary: #007bff;
+  --color-primary-hover: #0056b3;
+  --color-primary-surface: #f5f9ff;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-border: #e0e6ed;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f8fbff;
+  --shadow-soft: 0 22px 54px rgba(15, 23, 42, 0.08);
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html {
+html,
+body,
+#root {
   min-height: 100%;
 }
 
 body {
-  min-height: 100%;
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.1), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(245, 158, 11, 0.12), transparent 30%),
-    linear-gradient(180deg, #f7f3ea 0%, #eef2f5 100%);
-  color: var(--color-ink);
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    radial-gradient(circle at top left, rgba(0, 123, 255, 0.08), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 24%),
+    linear-gradient(180deg, #f4f8fc 0%, #eef3f8 100%);
+  color: var(--color-text-primary);
+  font-family: "Segoe UI Variable Text", "Aptos", "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 button,
 input,
-textarea,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -46,6 +52,72 @@ img {
   max-width: 100%;
 }
 
-#root {
-  min-height: 100vh;
+::selection {
+  background: rgba(0, 123, 255, 0.18);
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: "Segoe UI Variable Text", "Aptos", "Segoe UI", sans-serif;
+  background: #dbeafe;
+}
+
+.leaflet-control-zoom a {
+  color: var(--color-text-primary);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.14);
+}
+
+.leaflet-popup-tip {
+  box-shadow: none;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+}
+
+.civicroad-map-popup {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+  padding: 14px;
+}
+
+.civicroad-map-popup__title {
+  font-size: 0.96rem;
+  letter-spacing: -0.02em;
+}
+
+.civicroad-map-popup__meta,
+.civicroad-map-popup__status {
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.civicroad-map-popup__status--pending {
+  color: #c2410c;
+}
+
+.civicroad-map-popup__status--in_progress {
+  color: #6d28d9;
+}
+
+.civicroad-map-popup__status--resolved {
+  color: #047857;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+  }
 }

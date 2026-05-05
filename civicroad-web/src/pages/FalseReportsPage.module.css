@@ -1,0 +1,28 @@
+.reportCell {
+  display: grid;
+  gap: 8px;
+}
+
+.copy {
+  display: grid;
+  gap: 6px;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.location {
+  display: inline-block;
+  max-width: 220px;
+}

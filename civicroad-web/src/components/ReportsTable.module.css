@@ -1,0 +1,75 @@
+.reportCell {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.thumbnail {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--color-primary-surface);
+  box-shadow: inset 0 0 0 1px rgba(0, 123, 255, 0.08);
+}
+
+.thumbnailPlaceholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+.copy {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary);
+  font-weight: 800;
+  transition: color 180ms ease;
+}
+
+.actionLink:hover {
+  color: var(--color-primary-hover);
+}
+
+.stackedBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

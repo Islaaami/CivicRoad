@@ -59,6 +59,7 @@ CivicRoad is a platform where citizens can report civic issues and municipality 
 - `@react-navigation/drawer`
 - `@expo/vector-icons`
 - `expo-image-picker`
+- `expo-location`
 - `react-native-maps`
 - `expo-notifications`
 - `react-native-gesture-handler`
@@ -86,7 +87,7 @@ Database file:
 
 Default seeded admin account:
 
-- Email: `admin@example.com`
+- Email: `admin.agadir@example.com`
 - Password: `admin123`
 
 ### 2. Start the Web Dashboard

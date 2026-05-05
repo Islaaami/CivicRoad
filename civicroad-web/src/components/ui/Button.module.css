@@ -1,0 +1,127 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.16);
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.sizeSm {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 0.92rem;
+}
+
+.sizeMd {
+  min-height: 46px;
+  padding: 0 18px;
+  font-size: 0.96rem;
+}
+
+.sizeLg {
+  min-height: 52px;
+  padding: 0 20px;
+  font-size: 1rem;
+}
+
+.variantPrimary {
+  background: linear-gradient(135deg, var(--color-primary), #248dff);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(0, 123, 255, 0.24);
+}
+
+.variantPrimary:hover {
+  background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+}
+
+.variantSecondary {
+  border-color: var(--color-border);
+  background: #ffffff;
+  color: var(--color-text-primary);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.variantSecondary:hover,
+.variantGhost:hover {
+  border-color: rgba(0, 123, 255, 0.22);
+  background: var(--color-primary-surface);
+  color: var(--color-primary-hover);
+}
+
+.variantGhost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.variantDanger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(239, 68, 68, 0.24);
+}
+
+.variantDanger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.label {
+  white-space: nowrap;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: currentColor;
+  border-radius: 999px;
+  animation: button-spin 700ms linear infinite;
+}
+
+.loading.variantSecondary .spinner,
+.loading.variantGhost .spinner {
+  border-color: rgba(31, 41, 55, 0.16);
+  border-top-color: currentColor;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

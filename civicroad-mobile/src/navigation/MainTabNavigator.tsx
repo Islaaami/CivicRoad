@@ -1,9 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Platform } from "react-native";
 import CreateReportScreen from "../screens/CreateReportScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import ReportListScreen from "../screens/ReportListScreen";
-import { colors } from "../utils/theme";
+import { colors, radii, shadows } from "../utils/theme";
 
 export type AppTabParamList = {
   Reports: undefined;
@@ -37,28 +38,34 @@ function MainTabNavigator() {
       screenOptions={({ route }) => ({
         headerShadowVisible: false,
         headerStyle: {
-          backgroundColor: colors.background,
+          backgroundColor: colors.surface,
         },
         headerTitleStyle: {
           color: colors.text,
           fontWeight: "800",
         },
-        headerTintColor: colors.text,
+        headerTintColor: colors.primaryDark,
         sceneStyle: {
           backgroundColor: colors.background,
         },
-        tabBarActiveTintColor: colors.primaryDark,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          height: 74,
+          height: 76,
           paddingTop: 8,
-          paddingBottom: 8,
+          paddingBottom: Platform.OS === "ios" ? 12 : 10,
+          paddingHorizontal: 10,
           borderTopColor: colors.border,
-          backgroundColor: "#fffaf3",
+          backgroundColor: colors.surface,
+          borderTopWidth: 1,
+          ...shadows.tabBar,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "700",
+        },
+        tabBarItemStyle: {
+          borderRadius: radii.md,
         },
         tabBarIcon: ({ color, size, focused }) =>
           getTabIcon(route.name, color, size, focused),

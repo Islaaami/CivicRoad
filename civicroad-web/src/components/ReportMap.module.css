@@ -1,0 +1,94 @@
+.layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.85fr);
+}
+
+.layoutCompact {
+  grid-template-columns: 1fr;
+}
+
+.mapCard {
+  overflow: hidden;
+  min-height: 560px;
+}
+
+.mapCardCompact {
+  min-height: 320px;
+}
+
+.canvas {
+  min-height: 100%;
+}
+
+.listCard {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+
+.reportList {
+  display: grid;
+  gap: 12px;
+  max-height: 560px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.reportItem {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px rgba(224, 230, 237, 0.86);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.reportItem:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 123, 255, 0.12),
+    0 16px 30px rgba(15, 23, 42, 0.07);
+}
+
+.reportCopy {
+  display: grid;
+  gap: 6px;
+}
+
+.reportTitle {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.reportMeta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.reportBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mapCard {
+    min-height: 440px;
+  }
+
+  .reportList {
+    max-height: none;
+  }
+}

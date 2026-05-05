@@ -61,6 +61,7 @@ function CreateReportScreen({ navigation }: Props) {
   const [showUserLocation, setShowUserLocation] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [coordinate, setCoordinate] = useState(defaultCoordinates);
+  const [formResetKey, setFormResetKey] = useState(0);
 
   useEffect(() => {
     loadCategories();
@@ -209,6 +210,16 @@ function CreateReportScreen({ navigation }: Props) {
     return `report-${Date.now()}.jpg`;
   }
 
+  function resetForm() {
+    setTitle("");
+    setDescription("");
+    setSelectedImage(null);
+    setSelectedCategoryId(categories[0]?.id ?? null);
+    setShowUserLocation(false);
+    setCoordinate(defaultCoordinates);
+    setFormResetKey((currentValue) => currentValue + 1);
+  }
+
   async function handleSubmit() {
     if (!title.trim() || !description.trim() || !selectedCategoryId) {
       Alert.alert("Missing information", "Please complete the title, description, and category.");
@@ -261,6 +272,8 @@ function CreateReportScreen({ navigation }: Props) {
             "Please try again."
         );
       }
+
+      resetForm();
 
       navigation.navigate("ReportDetail", {
         reportId: (parsedBody as Report).id,
@@ -352,6 +365,7 @@ function CreateReportScreen({ navigation }: Props) {
               variant="secondary"
             />
             <MapView
+              key={formResetKey}
               ref={mapRef}
               initialRegion={{
                 ...coordinate,
@@ -461,8 +475,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   chipSelected: {
-    backgroundColor: "#f5e8da",
-    borderColor: "#ebc7a8",
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primary,
   },
   chipText: {
     color: colors.textMuted,
@@ -514,7 +528,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: "#fffaf3",
+    backgroundColor: colors.primarySurface,
     padding: 16,
   },
   sheetIconWrap: {
@@ -523,7 +537,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f5e8da",
+    backgroundColor: colors.primarySoft,
   },
   sheetCopy: {
     flex: 1,
@@ -546,7 +560,7 @@ const styles = StyleSheet.create({
   coordinateCard: {
     flex: 1,
     borderRadius: 20,
-    backgroundColor: "#fffaf3",
+    backgroundColor: colors.primarySurface,
     borderWidth: 1,
     borderColor: colors.border,
     padding: 14,

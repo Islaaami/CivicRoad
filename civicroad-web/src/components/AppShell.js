@@ -1,94 +1,220 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  NavLink,
+  Outlet,
+  matchPath,
+  useLocation,
+} from "react-router-dom";
 import { useAuth } from "../store/AuthContext";
+import { classNames } from "../utils/classNames";
+import {
+  getUserDisplayName,
+  getUserInitials,
+} from "../utils/reportPresentation";
+import Icon from "./Icon";
+import Button from "./ui/Button";
+import styles from "./AppShell.module.css";
 
 const navigationItems = [
   {
     to: "/",
     title: "Dashboard",
-    description: "Quick municipal overview",
+    description: "Operations overview",
+    icon: "dashboard",
   },
   {
     to: "/reports",
     title: "Reports",
-    description: "Browse every submitted issue",
+    description: "Manage submitted issues",
+    icon: "reports",
   },
   {
     to: "/map",
     title: "Map",
-    description: "See reports across the city",
+    description: "Inspect reports spatially",
+    icon: "map",
   },
   {
     to: "/false-reports",
     title: "False Reports",
-    description: "Review archived false submissions",
+    description: "Review archived submissions",
+    icon: "archive",
   },
 ];
 
-function AppShell() {
-  const { user, logout } = useAuth();
-  const municipalityLabel = user?.municipality || "Unassigned municipality";
+const pageMetadata = [
+  {
+    path: "/",
+    end: true,
+    title: "Municipal Operations Overview",
+    description:
+      "Keep incoming issues triaged, visible, and moving through the service workflow.",
+  },
+  {
+    path: "/reports",
+    end: true,
+    title: "Reports Queue",
+    description:
+      "Search, filter, and review every citizen report assigned to your municipality.",
+  },
+  {
+    path: "/reports/:reportId",
+    title: "Report Review",
+    description:
+      "Inspect evidence, adjust workflow status, and confirm the issue details before action.",
+  },
+  {
+    path: "/map",
+    end: true,
+    title: "Spatial Report View",
+    description:
+      "Use the city map to spot clusters, validate coordinates, and coordinate field response.",
+  },
+  {
+    path: "/false-reports",
+    end: true,
+    title: "False Report Archive",
+    description:
+      "Monitor archived submissions so the active queue stays focused on real incidents.",
+  },
+];
+
+function getPageMeta(pathname) {
+  const match = pageMetadata.find((entry) =>
+    matchPath({ path: entry.path, end: entry.end ?? false }, pathname)
+  );
 
   return (
-    <div className="app-shell">
-      <aside className="app-shell__sidebar">
-        <div className="brand-block">
-          <span className="brand-badge">Municipality Dashboard</span>
-          <div>
-            <h1 className="brand-title">CivicRoad</h1>
-            <p className="brand-text">
-              Municipal staff workspace for triaging citizen reports, checking
-              status, and spotting location patterns quickly.
-            </p>
+    match || {
+      title: "CivicRoad Dashboard",
+      description:
+        "Municipality workspace for managing citizen-submitted urban issues.",
+    }
+  );
+}
+
+function AppShell() {
+  const location = useLocation();
+  const { logout, user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const municipalityLabel = user?.municipality || "Municipality workspace";
+  const displayName = getUserDisplayName(user);
+  const initials = getUserInitials(user);
+  const pageMeta = getPageMeta(location.pathname);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  return (
+    <div className={styles.shell}>
+      <button
+        aria-label="Close navigation"
+        aria-hidden={!sidebarOpen}
+        className={classNames(styles.overlay, sidebarOpen && styles.overlayVisible)}
+        onClick={() => setSidebarOpen(false)}
+        tabIndex={sidebarOpen ? 0 : -1}
+        type="button"
+      />
+
+      <aside
+        className={classNames(
+          styles.sidebar,
+          sidebarOpen && styles.sidebarOpen
+        )}
+      >
+        <div className={styles.sidebarInner}>
+          <div className={styles.brandBlock}>
+            <div className={styles.brandMark}>
+              <Icon name="road" size={22} />
+            </div>
+            <div className={styles.brandCopy}>
+              <span className={styles.brandBadge}>CivicRoad</span>
+              <h1 className={styles.brandTitle}>Municipality Control Center</h1>
+              <p className={styles.brandText}>
+                A calm, structured workspace for triage, investigation, and
+                service follow-up across the city.
+              </p>
+            </div>
           </div>
 
-          <nav className="nav-list" aria-label="Main navigation">
+          <nav aria-label="Main navigation" className={styles.navList}>
             {navigationItems.map((item) => (
               <NavLink
-                key={item.to}
                 className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
+                  classNames(styles.navLink, isActive && styles.navLinkActive)
                 }
-                to={item.to}
                 end={item.to === "/"}
+                key={item.to}
+                to={item.to}
               >
-                <span className="nav-link__title">{item.title}</span>
-                <span className="nav-link__meta">{item.description}</span>
+                <span className={styles.navIcon}>
+                  <Icon name={item.icon} size={18} />
+                </span>
+                <span className={styles.navCopy}>
+                  <span className={styles.navTitle}>{item.title}</span>
+                  <span className={styles.navDescription}>
+                    {item.description}
+                  </span>
+                </span>
               </NavLink>
             ))}
           </nav>
-        </div>
 
-        <div className="sidebar-card">
-          <p className="sidebar-card__label">Signed In</p>
-          <p className="sidebar-card__value">{user?.email}</p>
-          <p className="nav-link__meta">{municipalityLabel}</p>
-          <button className="ghost-button" onClick={logout} type="button">
-            Log Out
-          </button>
+          <div className={styles.sidebarCard}>
+            <span className={styles.sidebarLabel}>Current municipality</span>
+            <strong className={styles.sidebarValue}>{municipalityLabel}</strong>
+            <p className={styles.sidebarText}>
+              Logged in as {user?.email}. Route work carefully, archive noise,
+              and keep citizens informed through timely status changes.
+            </p>
+          </div>
         </div>
       </aside>
 
-      <div className="app-shell__body">
-        <header className="app-shell__header">
-          <div className="header-copy">
-            <p className="header-eyebrow">Municipality Operations Board</p>
-            <h2 className="header-title">Respond faster to street issues.</h2>
-            <p className="header-text">
-              Track what is pending, move active work forward, and keep the
-              latest field reports visible in one place.
-            </p>
+      <div className={styles.mainFrame}>
+        <header className={styles.topbar}>
+          <div className={styles.topbarPrimary}>
+            <button
+              aria-label="Open navigation"
+              className={styles.menuButton}
+              onClick={() => setSidebarOpen(true)}
+              type="button"
+            >
+              <Icon name="menu" size={20} />
+            </button>
+
+            <div className={styles.pageCopy}>
+              <span className={styles.pageEyebrow}>{municipalityLabel}</span>
+              <h2 className={styles.pageTitle}>{pageMeta.title}</h2>
+              <p className={styles.pageDescription}>{pageMeta.description}</p>
+            </div>
           </div>
 
-          <div className="user-chip">
-            <span className="user-chip__email">{user?.email}</span>
-            <span className="user-chip__role">
-              {user?.municipality || user?.role || "staff"}
-            </span>
+          <div className={styles.userPanel}>
+            <div className={styles.userCard}>
+              <span className={styles.avatar}>{initials}</span>
+              <div className={styles.userCopy}>
+                <span className={styles.userName}>{displayName}</span>
+                <span className={styles.userMeta}>{user?.email}</span>
+              </div>
+            </div>
+
+            <Button
+              icon={<Icon name="logout" size={16} />}
+              onClick={logout}
+              size="sm"
+              variant="secondary"
+            >
+              Logout
+            </Button>
           </div>
         </header>
 
-        <main className="page-area">
-          <Outlet />
+        <main className={styles.contentArea}>
+          <div className={styles.contentInner}>
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

@@ -86,6 +86,157 @@ async function ensureColumnExists(tableName, columnName, columnDefinition) {
   }
 }
 
+function normalizeDefaultValue(value) {
+  return String(value || "")
+    .replace(/^['"(]+/, "")
+    .replace(/['")]+$/, "")
+    .trim()
+    .toLowerCase();
+}
+
+async function getColumnInfo(tableName, columnName) {
+  const columns = await db.all(`PRAGMA table_info(${tableName})`);
+  return columns.find((column) => column.name === columnName) || null;
+}
+
+async function rebuildReportsTableWithNullablePriority() {
+  await db.exec(`
+    PRAGMA foreign_keys = OFF;
+    BEGIN TRANSACTION;
+
+    CREATE TABLE reports_new (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      citizen_id INTEGER,
+      category_id INTEGER,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      latitude REAL NOT NULL,
+      longitude REAL NOT NULL,
+      municipality TEXT,
+      status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'in_progress', 'resolved')),
+      priority TEXT
+        CHECK (priority IN ('low', 'medium', 'high') OR priority IS NULL),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (citizen_id) REFERENCES users(id),
+      FOREIGN KEY (category_id) REFERENCES categories(id)
+    );
+
+    INSERT INTO reports_new (
+      id,
+      citizen_id,
+      category_id,
+      title,
+      description,
+      latitude,
+      longitude,
+      municipality,
+      status,
+      priority,
+      created_at
+    )
+    SELECT
+      id,
+      citizen_id,
+      category_id,
+      title,
+      description,
+      latitude,
+      longitude,
+      municipality,
+      status,
+      priority,
+      created_at
+    FROM reports;
+
+    DROP TABLE reports;
+    ALTER TABLE reports_new RENAME TO reports;
+
+    COMMIT;
+    PRAGMA foreign_keys = ON;
+  `);
+}
+
+async function rebuildFalseReportsTableWithNullablePriority() {
+  await db.exec(`
+    PRAGMA foreign_keys = OFF;
+    BEGIN TRANSACTION;
+
+    CREATE TABLE false_reports_new (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT,
+      description TEXT,
+      image_url TEXT,
+      latitude REAL,
+      longitude REAL,
+      address TEXT,
+      category_id INTEGER,
+      municipality TEXT,
+      priority TEXT
+        CHECK (priority IN ('low', 'medium', 'high') OR priority IS NULL),
+      created_at TEXT,
+      deleted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (category_id) REFERENCES categories(id)
+    );
+
+    INSERT INTO false_reports_new (
+      id,
+      title,
+      description,
+      image_url,
+      latitude,
+      longitude,
+      address,
+      category_id,
+      municipality,
+      priority,
+      created_at,
+      deleted_at
+    )
+    SELECT
+      id,
+      title,
+      description,
+      image_url,
+      latitude,
+      longitude,
+      address,
+      category_id,
+      municipality,
+      priority,
+      created_at,
+      deleted_at
+    FROM false_reports;
+
+    DROP TABLE false_reports;
+    ALTER TABLE false_reports_new RENAME TO false_reports;
+
+    COMMIT;
+    PRAGMA foreign_keys = ON;
+  `);
+}
+
+async function ensurePriorityColumnsAllowNull() {
+  const reportsPriorityColumn = await getColumnInfo("reports", "priority");
+  const falseReportsPriorityColumn = await getColumnInfo("false_reports", "priority");
+
+  if (
+    reportsPriorityColumn &&
+    (reportsPriorityColumn.notnull === 1 ||
+      normalizeDefaultValue(reportsPriorityColumn.dflt_value) === "medium")
+  ) {
+    await rebuildReportsTableWithNullablePriority();
+  }
+
+  if (
+    falseReportsPriorityColumn &&
+    (falseReportsPriorityColumn.notnull === 1 ||
+      normalizeDefaultValue(falseReportsPriorityColumn.dflt_value) === "medium")
+  ) {
+    await rebuildFalseReportsTableWithNullablePriority();
+  }
+}
+
 async function seedCategories() {
   const existingCategories = await db.get(
     "SELECT COUNT(*) AS count FROM categories"
@@ -171,6 +322,7 @@ async function seedDemoReports() {
       latitude: 30.419974,
       longitude: -9.570921,
       status: "pending",
+      priority: "high",
       createdAt: "datetime('now', '-6 hours')",
     },
     {
@@ -181,6 +333,7 @@ async function seedDemoReports() {
       latitude: 30.401503,
       longitude: -9.583793,
       status: "in_progress",
+      priority: "medium",
       createdAt: "datetime('now', '-1 day')",
     },
     {
@@ -191,6 +344,7 @@ async function seedDemoReports() {
       latitude: 30.419303,
       longitude: -9.592856,
       status: "resolved",
+      priority: "low",
       createdAt: "datetime('now', '-2 days')",
     },
     {
@@ -201,6 +355,7 @@ async function seedDemoReports() {
       latitude: 30.35535,
       longitude: -9.53639,
       status: "pending",
+      priority: "high",
       createdAt: "datetime('now', '-10 hours')",
     },
     {
@@ -211,6 +366,7 @@ async function seedDemoReports() {
       latitude: 30.34164,
       longitude: -9.50356,
       status: "pending",
+      priority: "medium",
       createdAt: "datetime('now', '-14 hours')",
     },
   ];
@@ -243,9 +399,10 @@ async function seedDemoReports() {
           longitude,
           municipality,
           status,
+          priority,
           created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ${report.createdAt})
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ${report.createdAt})
       `,
       [
         demoCitizen.id,
@@ -256,6 +413,7 @@ async function seedDemoReports() {
         report.longitude,
         municipality,
         report.status,
+        report.priority,
       ]
     );
   }
@@ -281,6 +439,15 @@ async function backfillReportMunicipalities() {
       report.id,
     ]);
   }
+}
+
+async function normalizeReportPriorities() {
+  await db.run(
+    "UPDATE reports SET priority = NULL WHERE priority IS NOT NULL AND TRIM(priority) = ''"
+  );
+  await db.run(
+    "UPDATE false_reports SET priority = NULL WHERE priority IS NOT NULL AND TRIM(priority) = ''"
+  );
 }
 
 async function initDb() {
@@ -318,6 +485,8 @@ async function initDb() {
       municipality TEXT,
       status TEXT NOT NULL DEFAULT 'pending'
         CHECK (status IN ('pending', 'in_progress', 'resolved')),
+      priority TEXT
+        CHECK (priority IN ('low', 'medium', 'high') OR priority IS NULL),
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (citizen_id) REFERENCES users(id),
       FOREIGN KEY (category_id) REFERENCES categories(id)
@@ -340,6 +509,8 @@ async function initDb() {
       address TEXT,
       category_id INTEGER,
       municipality TEXT,
+      priority TEXT
+        CHECK (priority IN ('low', 'medium', 'high') OR priority IS NULL),
       created_at TEXT,
       deleted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (category_id) REFERENCES categories(id)
@@ -353,12 +524,16 @@ async function initDb() {
   await ensureColumnExists("users", "profile_image_url", "TEXT");
   await ensureColumnExists("users", "push_token", "TEXT");
   await ensureColumnExists("reports", "municipality", "TEXT");
+  await ensureColumnExists("reports", "priority", "TEXT");
   await ensureColumnExists("false_reports", "municipality", "TEXT");
+  await ensureColumnExists("false_reports", "priority", "TEXT");
+  await ensurePriorityColumnsAllowNull();
 
   await ensureAdminUsers();
   await seedCategories();
   await seedDemoReports();
   await backfillReportMunicipalities();
+  await normalizeReportPriorities();
 
   return db;
 }

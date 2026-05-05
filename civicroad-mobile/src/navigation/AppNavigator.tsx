@@ -31,7 +31,7 @@ const navigationTheme = {
   colors: {
     ...DefaultTheme.colors,
     background: colors.background,
-    card: colors.background,
+    card: colors.surface,
     text: colors.text,
     border: colors.border,
     primary: colors.primary,
@@ -41,13 +41,13 @@ const navigationTheme = {
 const sharedScreenOptions = {
   headerShadowVisible: false,
   headerStyle: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
   },
   headerTitleStyle: {
     color: colors.text,
     fontWeight: "800" as const,
   },
-  headerTintColor: colors.text,
+  headerTintColor: colors.primaryDark,
   contentStyle: {
     backgroundColor: colors.background,
   },

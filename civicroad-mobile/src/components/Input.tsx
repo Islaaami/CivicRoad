@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TextInput, TextInputProps, View } from "react-native";
-import { colors } from "../utils/theme";
+import { colors, radii, spacing, typography } from "../utils/theme";
 
 type InputProps = TextInputProps & {
   label: string;
@@ -12,7 +12,7 @@ function Input({ label, helperText, multiline, style, ...props }: InputProps) {
       <Text style={styles.label}>{label}</Text>
       <TextInput
         multiline={multiline}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.textSubtle}
         style={[styles.input, multiline ? styles.inputMultiline : null, style]}
         {...props}
       />
@@ -23,22 +23,20 @@ function Input({ label, helperText, multiline, style, ...props }: InputProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    gap: 8,
+    gap: spacing.xs,
   },
   label: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: "700",
+    ...typography.bodyStrong,
   },
   input: {
     minHeight: 54,
-    borderRadius: 18,
+    borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
     color: colors.text,
     fontSize: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 14,
   },
   inputMultiline: {
@@ -46,9 +44,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   helper: {
-    color: colors.textMuted,
-    fontSize: 13,
-    lineHeight: 18,
+    ...typography.caption,
   },
 });
 

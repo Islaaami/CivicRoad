@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   heroBadge: {
     alignSelf: "flex-start",
     borderRadius: 999,
-    backgroundColor: "#f5e8da",
+    backgroundColor: colors.primarySoft,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },

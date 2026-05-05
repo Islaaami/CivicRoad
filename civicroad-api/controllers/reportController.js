@@ -4,7 +4,20 @@ const { getDb } = require("../db");
 const { determineMunicipalityFromCoordinates } = require("../utils/municipality");
 
 const VALID_STATUSES = ["pending", "in_progress", "resolved"];
+const VALID_PRIORITIES = ["low", "medium", "high"];
 const uploadsDirectory = path.join(__dirname, "..", "uploads");
+
+function normalizePriority(priority) {
+  if (
+    priority === undefined ||
+    priority === null ||
+    String(priority).trim() === ""
+  ) {
+    return null;
+  }
+
+  return String(priority).trim();
+}
 
 function normalizeReport(report, images = []) {
   if (!report) {
@@ -50,6 +63,7 @@ async function fetchReportById(id, requestUser) {
         reports.longitude,
         reports.municipality,
         reports.status,
+        reports.priority,
         reports.created_at,
         (
           SELECT url
@@ -93,6 +107,7 @@ async function listReportsForUser(requestUser) {
         reports.longitude,
         reports.municipality,
         reports.status,
+        reports.priority,
         reports.created_at,
         (
           SELECT url
@@ -149,8 +164,15 @@ async function getReport(request, response, next) {
 
 async function createReport(request, response, next) {
   try {
-    const { title, description, category_id, latitude, longitude, citizen_id } =
-      request.body;
+    const {
+      title,
+      description,
+      category_id,
+      latitude,
+      longitude,
+      citizen_id,
+      priority,
+    } = request.body;
 
     const missingRequiredFields = [
       title,
@@ -185,6 +207,15 @@ async function createReport(request, response, next) {
       response.status(400).json({
         message:
           "category_id, latitude, longitude, and citizen_id must be valid numbers.",
+      });
+      return;
+    }
+
+    const nextPriority = normalizePriority(priority);
+
+    if (nextPriority && !VALID_PRIORITIES.includes(nextPriority)) {
+      response.status(400).json({
+        message: `Priority must be one of: ${VALID_PRIORITIES.join(", ")}.`,
       });
       return;
     }
@@ -228,9 +259,10 @@ async function createReport(request, response, next) {
           latitude,
           longitude,
           municipality,
-          status
+          status,
+          priority
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `,
       [
         parsedCitizenId,
@@ -240,6 +272,7 @@ async function createReport(request, response, next) {
         parsedLatitude,
         parsedLongitude,
         municipality,
+        nextPriority,
       ]
     );
 
@@ -336,6 +369,39 @@ async function updateReportStatus(request, response, next) {
   }
 }
 
+async function updateReportPriority(request, response, next) {
+  try {
+    const nextPriority = normalizePriority(request.body.priority);
+
+    if (nextPriority && !VALID_PRIORITIES.includes(nextPriority)) {
+      response.status(400).json({
+        message: `Priority must be one of: ${VALID_PRIORITIES.join(", ")}.`,
+      });
+      return;
+    }
+
+    const report = await fetchReportById(request.params.id, request.user);
+
+    if (!report) {
+      response.status(404).json({
+        message: "Report not found.",
+      });
+      return;
+    }
+
+    const db = getDb();
+    await db.run("UPDATE reports SET priority = ? WHERE id = ?", [
+      nextPriority,
+      request.params.id,
+    ]);
+
+    const updatedReport = await fetchReportById(request.params.id, request.user);
+    response.json(updatedReport);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function deleteReport(request, response, next) {
   try {
     const db = getDb();
@@ -389,11 +455,13 @@ async function deleteReport(request, response, next) {
 
 module.exports = {
   VALID_STATUSES,
+  VALID_PRIORITIES,
   getReports,
   getReportsMap,
   getReport,
   createReport,
   updateReport,
   updateReportStatus,
+  updateReportPriority,
   deleteReport,
 };

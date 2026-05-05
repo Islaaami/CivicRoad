@@ -1,0 +1,235 @@
+.toolbar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.layout {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.9fr);
+}
+
+.primaryColumn,
+.sideColumn {
+  display: grid;
+  gap: 24px;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.reportId {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(224, 230, 237, 0.92);
+}
+
+.summaryCopy {
+  display: grid;
+  gap: 10px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.85rem, 4vw, 2.6rem);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+.metaGrid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 24px;
+}
+
+.metaItem {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(224, 230, 237, 0.86);
+}
+
+.metaLabel {
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.metaValue {
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.imageButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.reportImage {
+  width: 100%;
+  border-radius: 22px;
+  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  transition: transform 180ms ease;
+}
+
+.imageButton:hover .reportImage {
+  transform: scale(1.01);
+}
+
+.controlSection {
+  display: grid;
+  gap: 16px;
+}
+
+.controlSection + .controlSection {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(224, 230, 237, 0.9);
+}
+
+.controlHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.controlLabel {
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.controlValue {
+  font-weight: 700;
+}
+
+.optionGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.optionButton {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: #ffffff;
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+.optionButton:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 123, 255, 0.18);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.06);
+}
+
+.optionButton:disabled {
+  cursor: wait;
+  opacity: 0.74;
+  transform: none;
+}
+
+.optionButtonActive {
+  border-color: rgba(0, 123, 255, 0.28);
+  background: var(--color-primary-surface);
+  box-shadow: inset 0 0 0 1px rgba(0, 123, 255, 0.08);
+}
+
+.optionTitle {
+  font-weight: 800;
+}
+
+.optionDescription {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.factList {
+  display: grid;
+  gap: 12px;
+}
+
+.factItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(224, 230, 237, 0.92);
+}
+
+.factLabel {
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.factValue {
+  text-align: right;
+  font-weight: 700;
+}
+
+.modalImage {
+  width: 100%;
+  max-height: calc(100vh - 180px);
+  border-radius: 22px;
+  object-fit: contain;
+  background: #f8fbff;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .factItem {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -5,6 +5,6 @@ test("renders the CivicRoad login screen", async () => {
   render(<App />);
 
   expect(
-    await screen.findByText(/municipality dashboard/i)
+    await screen.findByText(/municipal operations console/i)
   ).toBeInTheDocument();
 });

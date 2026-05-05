@@ -95,7 +95,6 @@ function ProfileScreen({ navigation }: Props) {
 
   const totalReports = reports.length;
   const resolvedReports = reports.filter((report) => report.status === "resolved").length;
-  const pendingReports = reports.filter((report) => report.status !== "resolved").length;
 
   const badges = useMemo(
     () => [
@@ -179,21 +178,6 @@ function ProfileScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{totalReports}</Text>
-            <Text style={styles.summaryLabel}>Total reports</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{resolvedReports}</Text>
-            <Text style={styles.summaryLabel}>Resolved</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryValue}>{pendingReports}</Text>
-            <Text style={styles.summaryLabel}>Active</Text>
-          </View>
-        </View>
-
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Badges</Text>
           <View style={styles.badgeList}>
@@ -255,7 +239,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f5e8da",
+    backgroundColor: colors.primarySoft,
   },
   avatarImage: {
     width: "100%",
@@ -284,29 +268,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-  summaryRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  summaryCard: {
-    flex: 1,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: "#fffaf3",
-    padding: 16,
-    alignItems: "center",
-    gap: 6,
-  },
-  summaryValue: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: "900",
-  },
-  summaryLabel: {
-    color: colors.textMuted,
-    fontSize: 13,
-  },
   section: {
     gap: 12,
     borderRadius: 28,
@@ -332,7 +293,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: "#fffaf3",
+    backgroundColor: colors.primarySurface,
     padding: 14,
   },
   detailLabel: {

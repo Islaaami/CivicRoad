@@ -41,8 +41,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   cardUnlocked: {
-    borderColor: "#ebc7a8",
-    backgroundColor: "#fff7ed",
+    borderColor: "#dbeafe",
+    backgroundColor: "#f5f9ff",
   },
   cardLocked: {
     borderColor: colors.border,
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconUnlocked: {
-    backgroundColor: "#f5e8da",
+    backgroundColor: "#e9f3ff",
   },
   iconLocked: {
     backgroundColor: "#eef2f7",
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
   },
   pillUnlocked: {
-    backgroundColor: "#fde7cf",
+    backgroundColor: "#e9f3ff",
   },
   pillLocked: {
     backgroundColor: "#f1f5f9",

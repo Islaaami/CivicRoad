@@ -1,19 +1,16 @@
-const STATUS_LABELS = {
-  pending: "Pending",
-  in_progress: "In Progress",
-  resolved: "Resolved",
-};
+import {
+  formatStatusLabel,
+  getStatusTone,
+} from "../utils/reportPresentation";
+import Badge from "./ui/Badge";
 
-export function formatStatusLabel(status) {
-  return STATUS_LABELS[status] || status;
-}
-
-function StatusBadge({ status }) {
+function StatusBadge({ className, size = "md", status }) {
   return (
-    <span className={`status-badge status-badge--${status}`}>
+    <Badge className={className} size={size} tone={getStatusTone(status)}>
       {formatStatusLabel(status)}
-    </span>
+    </Badge>
   );
 }
 
+export { formatStatusLabel };
 export default StatusBadge;

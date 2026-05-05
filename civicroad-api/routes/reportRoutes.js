@@ -7,6 +7,7 @@ const {
   createReport,
   updateReport,
   updateReportStatus,
+  updateReportPriority,
   deleteReport,
 } = require("../controllers/reportController");
 const { markReportAsFalse } = require("../controllers/falseReportController");
@@ -20,6 +21,7 @@ router.post("/", upload.single("image"), createReport);
 router.post("/:id/false", markReportAsFalse);
 router.patch("/:id", updateReport);
 router.patch("/:id/status", updateReportStatus);
+router.patch("/:id/priority", updateReportPriority);
 router.delete("/:id", deleteReport);
 
 module.exports = router;
